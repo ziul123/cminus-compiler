@@ -2,5 +2,5 @@ Trabalho da disciplina de compiladores
 Compilador de C- para RISC-V
 
 Uso:
-	* `make build`
 	* `make`
+	* `make cmc`
