@@ -8,7 +8,7 @@ SRC_FILES = $(wildcard $(SRC_DIR)/*.c)
 OBJ_FILES = $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRC_FILES))
 DEP_FILES = $(OBJ_FILES:.o=.d)
 
-build: scan parse
+build: setup scan parse
 	@echo Build terminado, agora faça make cmc
 
 cmc: $(OBJ_FILES)
