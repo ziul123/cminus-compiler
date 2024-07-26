@@ -1,0 +1,14 @@
+/*
+ * PROGRAMA TESTE *
+*/
+
+{
+a = 1;
+b = 2 + a;
+	{
+	c = 3;
+	}
+//comentario
+result = (a * b) - 3;
+div = a / b;
+}
