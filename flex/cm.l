@@ -1,5 +1,6 @@
 %{
-#include <stdio.h>
+#include "stdlib.h"
+#include "string.h"
 #include "parse.h"
 extern FILE *yyin;
 %}
@@ -30,8 +31,13 @@ outro .
 
 %x ML_COMMENT
 %%
-{id}		{return ID;}
-{number}	{return NUM;}
+{id}		{
+					char *tmp = malloc(strlen(yytext));
+					strcpy(tmp, yytext);
+					yylval.ID = tmp;
+					return ID;
+				}
+{number}	{yylval.NUM = atoi(yytext); return NUM;}
 {comment}	{;}
 {c_start}	{BEGIN(ML_COMMENT);}
 <ML_COMMENT>{
@@ -49,7 +55,6 @@ outro .
 {curly_open}		{return CURLY_OPEN;}
 {curly_close}		{return CURLY_CLOSE;}
 {end_cmd}		{return END_CMD;}
-{outro} 	{printf(":-(\n");}
 %%
 /* recomendavel declarar sempre
    funcao yywrap() */

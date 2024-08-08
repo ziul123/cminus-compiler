@@ -68,7 +68,30 @@ extern int yydebug;
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-typedef int YYSTYPE;
+
+union YYSTYPE
+{
+
+  /* ID  */
+  char * ID;
+  /* var  */
+  char * var;
+  /* NUM  */
+  int NUM;
+  /* fator  */
+  int fator;
+  /* termo  */
+  int termo;
+  /* expr_ad  */
+  int expr_ad;
+  /* expr_simples  */
+  int expr_simples;
+  /* expr  */
+  int expr;
+#line 92 "src/parse.h" /* yacc.c:1909  */
+};
+
+typedef union YYSTYPE YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1
 #endif

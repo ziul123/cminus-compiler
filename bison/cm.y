@@ -7,24 +7,41 @@ int yylex(void);
 int yyerror(char* s);
 extern int yylineno;
 %}
-%token NUM
-%token ID
-%token EQ
-%token PLUS
-%token MINUS
-%token ASTERISK
-%token SLASH
-%token PAREN_OPEN
-%token PAREN_CLOSE
-%token CURLY_OPEN
-%token CURLY_CLOSE
-%token END_CMD
-%token GT
-%token LT
-%token GT_EQ
-%token LT_EQ
-%token EQ_EQ
-%token NEQ
+%define api.value.type union
+%token <int> NUM
+%token <char *> ID
+%nterm <int>
+			fator
+			termo
+			expr_ad
+			expr_simples
+			expr
+%nterm <char *>
+			var
+%token
+			EQ	
+			PLUS
+			MINUS
+			ASTERISK
+			SLASH
+			PAREN_OPEN
+			PAREN_CLOSE
+			CURLY_OPEN
+			CURLY_CLOSE
+			END_CMD
+			GT
+			LT
+			GT_EQ
+			LT_EQ
+			EQ_EQ
+			NEQ
+
+%printer { fprintf(yyo, "%s", $$); } ID;
+%printer { fprintf(yyo, "%s", $$); } var;
+%printer { fprintf(yyo, "%d", $$); } <int>;
+
+%destructor {free($$);} <char *>
+
 %%
 /* Regras definindo a GLC e acoes correspondentes */
 /* neste nosso exemplo quase todas as acoes estao vazias */
@@ -53,7 +70,7 @@ expr_cmd:
 					;
 
 expr:
-					var EQ expr		{;}
+						var EQ expr		{printf("%s: %d\n", $1, $3); $$ = $3;}
 					| expr_simples	{;}
 					;
 
@@ -65,14 +82,14 @@ expr_simples:
 op_rel: GT | LT | GT_EQ | LT_EQ | EQ_EQ | NEQ ;
 
 expr_ad:
-			 		expr_ad op_ad termo	{;}
+			 		expr_ad op_ad termo	{$$ = $1 + $3;}
 					| termo	{;}
 					;
 
 op_ad: PLUS | MINUS ;
 
 termo:
-		 			termo op_mul fator	{;}
+		 			termo op_mul fator	{$$ = $1 * $3;}
 					| fator	{;}
 					;
 
@@ -84,7 +101,7 @@ fator:
 					| NUM	{;}
 					;
 
-var: ID ;
+var: ID {;};
 
 %%
 int main () 
