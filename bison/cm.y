@@ -6,6 +6,7 @@
 int yylex(void);
 int yyerror(char* s);
 extern int yylineno;
+extern FILE *yyin;
 %}
 %define api.value.type union
 %token <int> NUM
@@ -24,10 +25,10 @@ extern int yylineno;
 			MINUS
 			ASTERISK
 			SLASH
-			PAREN_OPEN
-			PAREN_CLOSE
-			CURLY_OPEN
-			CURLY_CLOSE
+			LPAREN
+			RPAREN
+			LCURLY
+			RCURLY
 			END_CMD
 			GT
 			LT
@@ -61,7 +62,7 @@ cmd:
 					;
 
 bloco_cmd:
-				 	CURLY_OPEN lista_cmds CURLY_CLOSE	{;}
+				 	LCURLY lista_cmds RCURLY	{;}
 					;
 
 expr_cmd:
@@ -96,7 +97,7 @@ termo:
 op_mul: ASTERISK | SLASH ;
 
 fator:
-		 			PAREN_OPEN expr PAREN_CLOSE	{;}
+		 			LPAREN expr RPAREN	{;}
 					| var	{;}
 					| NUM	{;}
 					;
@@ -104,8 +105,14 @@ fator:
 var: ID {;};
 
 %%
-int main () 
+int main (int argc, char **argv) 
 {
+	if (argc == 2) {
+		if(!(yyin = fopen(argv[1], "r"))) {
+			perror("Error reading file.\n");
+			return 1;
+		}
+	}
 //	yydebug = 1;
 	yyparse ();
 }

@@ -1,8 +1,8 @@
 %{
-#include "stdlib.h"
-#include "string.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 #include "parse.h"
-extern FILE *yyin;
 %}
 %option yylineno
 id	[a-zA-Z][a-zA-Z0-9]*
@@ -16,10 +16,10 @@ plus \+
 minus \-
 asterisk \*
 slash \/
-paren_open \(
-paren_close \)
-curly_open \{
-curly_close \}
+lparen \(
+rparen \)
+lcurly \{
+rcurly \}
 end_cmd ;
 gt \>
 lt \<
@@ -32,9 +32,9 @@ outro .
 %x ML_COMMENT
 %%
 {id}		{
-					char *tmp = malloc(strlen(yytext));
-					strcpy(tmp, yytext);
-					yylval.ID = tmp;
+					yylval.ID = strdup(yytext);
+					if (!yylval.ID)
+						perror("Error allocating memory for var identifier.\n");
 					return ID;
 				}
 {number}	{yylval.NUM = atoi(yytext); return NUM;}
@@ -50,10 +50,10 @@ outro .
 {minus}		{return MINUS;}
 {asterisk}		{return ASTERISK;}
 {slash}		{return SLASH;}
-{paren_open}		{return PAREN_OPEN;}
-{paren_close}		{return PAREN_CLOSE;}
-{curly_open}		{return CURLY_OPEN;}
-{curly_close}		{return CURLY_CLOSE;}
+{lparen}		{return LPAREN;}
+{rparen}		{return RPAREN;}
+{lcurly}		{return LCURLY;}
+{rcurly}		{return RCURLY;}
 {end_cmd}		{return END_CMD;}
 %%
 /* recomendavel declarar sempre
