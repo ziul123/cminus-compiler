@@ -32,32 +32,30 @@ outro .
 %x ML_COMMENT
 %%
 {id}		{
-					yylval.ID = strdup(yytext);
-					if (!yylval.ID)
+					yylval.id = strdup(yytext);
+					if (!yylval.id)
 						perror("Error allocating memory for var identifier.\n");
 					return ID;
 				}
-{number}	{yylval.NUM = atoi(yytext); return NUM;}
-{comment}	{;}
-{c_start}	{BEGIN(ML_COMMENT);}
+{number}		{yylval.num = atoi(yytext); return NUM;}
+{comment}		{;}
+{c_start}		{BEGIN(ML_COMMENT);}
 <ML_COMMENT>{
-	.|\n	{yymore();}
-	{c_end}	{BEGIN(INITIAL);}
+	.|\n				{yymore();}
+	{c_end}			{BEGIN(INITIAL);}
 }
-{branco}	{;}
-{equal}		{return EQ;}
-{plus}		{return PLUS;}
-{minus}		{return MINUS;}
-{asterisk}		{return ASTERISK;}
-{slash}		{return SLASH;}
+{branco}		{;}
+{equal}			{return EQUAL;}
+{plus}			{return PLUS;}
+{minus}			{return MINUS;}
+{asterisk}	{return ASTERISK;}
+{slash}			{return SLASH;}
 {lparen}		{return LPAREN;}
 {rparen}		{return RPAREN;}
 {lcurly}		{return LCURLY;}
 {rcurly}		{return RCURLY;}
 {end_cmd}		{return END_CMD;}
 %%
-/* recomendavel declarar sempre
-   funcao yywrap() */
 
 int yywrap() {
  return 1;

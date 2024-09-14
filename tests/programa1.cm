@@ -3,10 +3,10 @@
 */
 
 {
-a = 1;
+a = 1 + 0;
 b = 2 + a;
 	{
-	c = 3;
+	c = 3 + 0;
 	}
 //comentario
 result = (a * b) - 3;

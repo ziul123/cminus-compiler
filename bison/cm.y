@@ -1,26 +1,41 @@
-/* Verificando a sintaxe de programas segundo nossa GLC-exemplo */
-/* considerando notacao polonesa para expressoes */
-%{
+%code top{
 #include <stdio.h> 
 #define YYDEBUG 1
+}
+
+%code requires {
+#include "tables.h"
+}
+
+%union {
+	int num;
+	char *id;
+	tac_address addr;
+}
+
+%code {
 int yylex(void);
 int yyerror(char* s);
 extern int yylineno;
 extern FILE *yyin;
-%}
-%define api.value.type union
-%token <int> NUM
-%token <char *> ID
-%nterm <int>
+
+st_cell symbol_table[4096];
+tac_cell tac_table[4096];
+int tac_counter = 0;
+int label_counter = 0;
+}
+
+%token <num> NUM
+%token <id> ID
+%nterm <addr>
 			fator
 			termo
 			expr_ad
 			expr_simples
 			expr
-%nterm <char *>
-			var
+%nterm <id> var
 %token
-			EQ	
+			EQUAL
 			PLUS
 			MINUS
 			ASTERISK
@@ -37,11 +52,8 @@ extern FILE *yyin;
 			EQ_EQ
 			NEQ
 
-%printer { fprintf(yyo, "%s", $$); } ID;
-%printer { fprintf(yyo, "%s", $$); } var;
-%printer { fprintf(yyo, "%d", $$); } <int>;
+%printer { print_tac_address(yyo, $$); } <tac_address>;
 
-%destructor {free($$);} <char *>
 
 %%
 /* Regras definindo a GLC e acoes correspondentes */
@@ -71,50 +83,112 @@ expr_cmd:
 					;
 
 expr:
-						var EQ expr		{printf("%s: %d\n", $1, $3); $$ = $3;}
+					var EQUAL expr		{/*
+						tac_cell *tmp = make_tac_cell($1, $3, (SGT));
+						tac_table[tac_counter++] = tmp;
+						$$ = make_tmp(tmp)*/;}
 					| expr_simples	{;}
 					;
 
 expr_simples:
-					expr_ad op_rel expr_ad	{;}
+					expr_ad GT expr_ad			{
+						tac_cell tmp = {.source1=$1, .source2=$3, .inst=SGT};
+						tac_table[tac_counter] = tmp;
+						$$ = tac_counter++;}
+					| expr_ad LT expr_ad		{
+						tac_cell tmp = {.source1=$1, .source2=$3, .inst=SLT};
+						tac_table[tac_counter] = tmp;
+						$$ = tac_counter++;}
+					| expr_ad GT_EQ expr_ad	{
+						tac_cell tmp = {.source1=$1, .source2=$3, .inst=SGTE};
+						tac_table[tac_counter] = tmp;
+						$$ = tac_counter++;}
+					| expr_ad LT_EQ expr_ad	{
+						tac_cell tmp = {.source1=$1, .source2=$3, .inst=SLTE};
+						tac_table[tac_counter] = tmp;
+						$$ = tac_counter++;}
+					| expr_ad EQ_EQ expr_ad	{
+						tac_cell tmp = {.source1=$1, .source2=$3, .inst=SEQ};
+						tac_table[tac_counter] = tmp;
+						$$ = tac_counter++;}
+					| expr_ad NEQ expr_ad		{
+						tac_cell tmp = {.source1=$1, .source2=$3, .inst=SNEQ};
+						tac_table[tac_counter] = tmp;
+						$$ = tac_counter++;}
 					| expr_ad	{;}
 					;
 
-op_rel: GT | LT | GT_EQ | LT_EQ | EQ_EQ | NEQ ;
-
 expr_ad:
-			 		expr_ad op_ad termo	{$$ = $1 + $3;}
+			 		expr_ad PLUS termo		{
+						tac_cell tmp = {.source1=$1, .source2=$3, .inst=ADD};
+						tac_table[tac_counter] = tmp;
+						$$ = tac_counter++;}
+			 		| expr_ad MINUS termo	{
+						tac_cell tmp = {.source1=$1, .source2=$3, .inst=SUB};
+						tac_table[tac_counter] = tmp;
+						$$ = tac_counter++;}
 					| termo	{;}
 					;
 
-op_ad: PLUS | MINUS ;
-
 termo:
-		 			termo op_mul fator	{$$ = $1 * $3;}
+		 			termo ASTERISK fator	{
+						tac_cell tmp = {.source1=$1, .source2=$3, .inst=MUL};
+						tac_table[tac_counter] = tmp;
+						$$ = tac_counter++;}
+		 			| termo SLASH fator		{
+						tac_cell tmp = {.source1=$1, .source2=$3, .inst=DIV};
+						tac_table[tac_counter] = tmp;
+						$$ = tac_counter++;}
 					| fator	{;}
 					;
 
-op_mul: ASTERISK | SLASH ;
-
 fator:
 		 			LPAREN expr RPAREN	{;}
-					| var	{;}
-					| NUM	{;}
+					| var	{$$ = (tac_address){.name = $1, .addr_type = NAME};}
+					| NUM	{$$ = (tac_address){.constant = $1, .addr_type = CONST};}
 					;
 
 var: ID {;};
 
 %%
-int main (int argc, char **argv) 
-{
+
+void print_tac_address(FILE *stream, tac_address addr) {
+	switch (addr.addr_type) {
+		case TEMP:
+			fprintf(stream, "(%d)", (int) addr.temporary);
+			break;
+
+		case CONST:
+			fprintf(stream, "%d", addr.constant);
+			break;
+
+		case NAME:
+			fprintf(stream, "%s", addr.name);
+			break;
+	}
+}
+
+void print_tac_cell(tac_cell *cell, int lineno) {
+	printf("%d: %s ", lineno, str_inst[cell->inst]);
+	print_tac_address(stdout, cell->source1);
+	printf(" ");
+	print_tac_address(stdout, cell->source2);
+	printf("\n");
+}
+
+int main(int argc, char **argv) {
 	if (argc == 2) {
-		if(!(yyin = fopen(argv[1], "r"))) {
+		if (!(yyin = fopen(argv[1], "r"))) {
 			perror("Error reading file.\n");
 			return 1;
 		}
 	}
 //	yydebug = 1;
-	yyparse ();
+	yyparse();
+
+	for (int i = 0; i < tac_counter; i++) {
+		print_tac_cell(tac_table[i], i);
+	}
 }
 int yyerror (char *s) /* Called by yyparse on error */
 {
