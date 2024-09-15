@@ -18,7 +18,7 @@ int yylex(void);
 int yyerror(char* s);
 extern int yylineno;
 extern FILE *yyin;
-
+void print_tac_address(FILE *stream, tac_address addr);
 st_cell symbol_table[4096];
 tac_cell tac_table[4096];
 int tac_counter = 0;
@@ -52,7 +52,7 @@ int label_counter = 0;
 			EQ_EQ
 			NEQ
 
-%printer { print_tac_address(yyo, $$); } <tac_address>;
+//%printer { print_tac_address(yyo, $$); } <tac_address>;
 
 
 %%
@@ -83,10 +83,9 @@ expr_cmd:
 					;
 
 expr:
-					var EQUAL expr		{/*
-						tac_cell *tmp = make_tac_cell($1, $3, (SGT));
-						tac_table[tac_counter++] = tmp;
-						$$ = make_tmp(tmp)*/;}
+					var EQUAL expr		{
+						yyval.addr.addr_type = NAME;
+					}
 					| expr_simples	{;}
 					;
 
@@ -94,27 +93,32 @@ expr_simples:
 					expr_ad GT expr_ad			{
 						tac_cell tmp = {.source1=$1, .source2=$3, .inst=SGT};
 						tac_table[tac_counter] = tmp;
-						$$ = tac_counter++;}
+						$$ = make_tmp(tac_counter++);}
+
 					| expr_ad LT expr_ad		{
 						tac_cell tmp = {.source1=$1, .source2=$3, .inst=SLT};
 						tac_table[tac_counter] = tmp;
-						$$ = tac_counter++;}
+						$$ = make_tmp(tac_counter++);}
+
 					| expr_ad GT_EQ expr_ad	{
 						tac_cell tmp = {.source1=$1, .source2=$3, .inst=SGTE};
 						tac_table[tac_counter] = tmp;
-						$$ = tac_counter++;}
+						$$ = make_tmp(tac_counter++);}
+
 					| expr_ad LT_EQ expr_ad	{
 						tac_cell tmp = {.source1=$1, .source2=$3, .inst=SLTE};
 						tac_table[tac_counter] = tmp;
-						$$ = tac_counter++;}
+						$$ = make_tmp(tac_counter++);}
+
 					| expr_ad EQ_EQ expr_ad	{
 						tac_cell tmp = {.source1=$1, .source2=$3, .inst=SEQ};
 						tac_table[tac_counter] = tmp;
-						$$ = tac_counter++;}
+						$$ = make_tmp(tac_counter++);}
+
 					| expr_ad NEQ expr_ad		{
 						tac_cell tmp = {.source1=$1, .source2=$3, .inst=SNEQ};
 						tac_table[tac_counter] = tmp;
-						$$ = tac_counter++;}
+						$$ = make_tmp(tac_counter++);}
 					| expr_ad	{;}
 					;
 
@@ -122,11 +126,13 @@ expr_ad:
 			 		expr_ad PLUS termo		{
 						tac_cell tmp = {.source1=$1, .source2=$3, .inst=ADD};
 						tac_table[tac_counter] = tmp;
-						$$ = tac_counter++;}
+						$$ = make_tmp(tac_counter++);}
 			 		| expr_ad MINUS termo	{
 						tac_cell tmp = {.source1=$1, .source2=$3, .inst=SUB};
 						tac_table[tac_counter] = tmp;
-						$$ = tac_counter++;}
+						tac_address t = make_tmp(tac_counter++);
+						print_tac_address(stdout, t);
+						$$ = t;}
 					| termo	{;}
 					;
 
@@ -134,11 +140,13 @@ termo:
 		 			termo ASTERISK fator	{
 						tac_cell tmp = {.source1=$1, .source2=$3, .inst=MUL};
 						tac_table[tac_counter] = tmp;
-						$$ = tac_counter++;}
+						tac_address t = make_tmp(tac_counter++);
+						print_tac_address(stdout, t);
+						$$ = t;}
 		 			| termo SLASH fator		{
 						tac_cell tmp = {.source1=$1, .source2=$3, .inst=DIV};
 						tac_table[tac_counter] = tmp;
-						$$ = tac_counter++;}
+						$$ = make_tmp(tac_counter++);}
 					| fator	{;}
 					;
 
@@ -155,7 +163,7 @@ var: ID {;};
 void print_tac_address(FILE *stream, tac_address addr) {
 	switch (addr.addr_type) {
 		case TEMP:
-			fprintf(stream, "(%d)", (int) addr.temporary);
+			fprintf(stream, "(%d)", addr.temporary);
 			break;
 
 		case CONST:
@@ -168,11 +176,11 @@ void print_tac_address(FILE *stream, tac_address addr) {
 	}
 }
 
-void print_tac_cell(tac_cell *cell, int lineno) {
-	printf("%d: %s ", lineno, str_inst[cell->inst]);
-	print_tac_address(stdout, cell->source1);
+void print_tac_cell(tac_cell cell, int lineno) {
+	printf("%d: %s ", lineno, str_inst[cell.inst]);
+	print_tac_address(stdout, cell.source1);
 	printf(" ");
-	print_tac_address(stdout, cell->source2);
+	print_tac_address(stdout, cell.source2);
 	printf("\n");
 }
 
@@ -186,6 +194,7 @@ int main(int argc, char **argv) {
 //	yydebug = 1;
 	yyparse();
 
+	// botamos para ficar padronizado com o tamanho do tac_counter
 	for (int i = 0; i < tac_counter; i++) {
 		print_tac_cell(tac_table[i], i);
 	}

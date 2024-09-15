@@ -168,9 +168,9 @@ int yylex(void);
 int yyerror(char* s);
 extern int yylineno;
 extern FILE *yyin;
-
+void print_tac_address(FILE *stream, tac_address addr);
 st_cell symbol_table[4096];
-tac_cell *tac_table[4096];
+tac_cell tac_table[4096];
 int tac_counter = 0;
 int label_counter = 0;
 
@@ -474,8 +474,8 @@ static const yytype_uint8 yytranslate[] =
 static const yytype_uint8 yyrline[] =
 {
        0,    63,    63,    66,    68,    72,    73,    77,    81,    82,
-      86,    90,    94,    98,   102,   106,   110,   114,   118,   122,
-     126,   130,   134,   138,   142,   146,   147,   148,   151
+      86,    89,    93,    98,   103,   108,   113,   118,   122,   126,
+     130,   136,   140,   146,   150,   154,   155,   156,   159
 };
 #endif
 
@@ -1315,153 +1315,156 @@ yyreduce:
 
   case 10:
 #line 86 "bison/cm.y" /* yacc.c:1646  */
-    {/*
-						tac_cell *tmp = make_tac_cell($1, $3, (SGT));
-						tac_table[tac_counter++] = tmp;
-						$$ = make_tmp(tmp)*/;}
-#line 1323 "src/parse.c" /* yacc.c:1646  */
+    {
+						yyval.addr.addr_type = NAME;
+					}
+#line 1322 "src/parse.c" /* yacc.c:1646  */
     break;
 
   case 11:
-#line 90 "bison/cm.y" /* yacc.c:1646  */
+#line 89 "bison/cm.y" /* yacc.c:1646  */
     {;}
-#line 1329 "src/parse.c" /* yacc.c:1646  */
+#line 1328 "src/parse.c" /* yacc.c:1646  */
     break;
 
   case 12:
-#line 94 "bison/cm.y" /* yacc.c:1646  */
+#line 93 "bison/cm.y" /* yacc.c:1646  */
     {
-						tac_cell *tmp = make_tac_cell((yyvsp[-2].addr), (yyvsp[0].addr), (SGT));
-						tac_table[tac_counter++] = tmp;
-						(yyval.addr) = make_tmp(tmp);}
-#line 1338 "src/parse.c" /* yacc.c:1646  */
+						tac_cell tmp = {.source1=(yyvsp[-2].addr), .source2=(yyvsp[0].addr), .inst=SGT};
+						tac_table[tac_counter] = tmp;
+						(yyval.addr) = make_tmp(tac_counter++);}
+#line 1337 "src/parse.c" /* yacc.c:1646  */
     break;
 
   case 13:
 #line 98 "bison/cm.y" /* yacc.c:1646  */
     {
-						tac_cell *tmp = make_tac_cell((yyvsp[-2].addr), (yyvsp[0].addr), (SLT));
-						tac_table[tac_counter++] = tmp;
-						(yyval.addr) = make_tmp(tmp);}
-#line 1347 "src/parse.c" /* yacc.c:1646  */
+						tac_cell tmp = {.source1=(yyvsp[-2].addr), .source2=(yyvsp[0].addr), .inst=SLT};
+						tac_table[tac_counter] = tmp;
+						(yyval.addr) = make_tmp(tac_counter++);}
+#line 1346 "src/parse.c" /* yacc.c:1646  */
     break;
 
   case 14:
-#line 102 "bison/cm.y" /* yacc.c:1646  */
+#line 103 "bison/cm.y" /* yacc.c:1646  */
     {
-						tac_cell *tmp = make_tac_cell((yyvsp[-2].addr), (yyvsp[0].addr), (SGTE));
-						tac_table[tac_counter++] = tmp;
-						(yyval.addr) = make_tmp(tmp);}
-#line 1356 "src/parse.c" /* yacc.c:1646  */
+						tac_cell tmp = {.source1=(yyvsp[-2].addr), .source2=(yyvsp[0].addr), .inst=SGTE};
+						tac_table[tac_counter] = tmp;
+						(yyval.addr) = make_tmp(tac_counter++);}
+#line 1355 "src/parse.c" /* yacc.c:1646  */
     break;
 
   case 15:
-#line 106 "bison/cm.y" /* yacc.c:1646  */
+#line 108 "bison/cm.y" /* yacc.c:1646  */
     {
-						tac_cell *tmp = make_tac_cell((yyvsp[-2].addr), (yyvsp[0].addr), (SLTE));
-						tac_table[tac_counter++] = tmp;
-						(yyval.addr) = make_tmp(tmp);}
-#line 1365 "src/parse.c" /* yacc.c:1646  */
+						tac_cell tmp = {.source1=(yyvsp[-2].addr), .source2=(yyvsp[0].addr), .inst=SLTE};
+						tac_table[tac_counter] = tmp;
+						(yyval.addr) = make_tmp(tac_counter++);}
+#line 1364 "src/parse.c" /* yacc.c:1646  */
     break;
 
   case 16:
-#line 110 "bison/cm.y" /* yacc.c:1646  */
+#line 113 "bison/cm.y" /* yacc.c:1646  */
     {
-						tac_cell *tmp = make_tac_cell((yyvsp[-2].addr), (yyvsp[0].addr), (SEQ));
-						tac_table[tac_counter++] = tmp;
-						(yyval.addr) = make_tmp(tmp);}
-#line 1374 "src/parse.c" /* yacc.c:1646  */
+						tac_cell tmp = {.source1=(yyvsp[-2].addr), .source2=(yyvsp[0].addr), .inst=SEQ};
+						tac_table[tac_counter] = tmp;
+						(yyval.addr) = make_tmp(tac_counter++);}
+#line 1373 "src/parse.c" /* yacc.c:1646  */
     break;
 
   case 17:
-#line 114 "bison/cm.y" /* yacc.c:1646  */
+#line 118 "bison/cm.y" /* yacc.c:1646  */
     {
-						tac_cell *tmp = make_tac_cell((yyvsp[-2].addr), (yyvsp[0].addr), (SNEQ));
-						tac_table[tac_counter++] = tmp;
-						(yyval.addr) = make_tmp(tmp);}
-#line 1383 "src/parse.c" /* yacc.c:1646  */
+						tac_cell tmp = {.source1=(yyvsp[-2].addr), .source2=(yyvsp[0].addr), .inst=SNEQ};
+						tac_table[tac_counter] = tmp;
+						(yyval.addr) = make_tmp(tac_counter++);}
+#line 1382 "src/parse.c" /* yacc.c:1646  */
     break;
 
   case 18:
-#line 118 "bison/cm.y" /* yacc.c:1646  */
+#line 122 "bison/cm.y" /* yacc.c:1646  */
     {;}
-#line 1389 "src/parse.c" /* yacc.c:1646  */
+#line 1388 "src/parse.c" /* yacc.c:1646  */
     break;
 
   case 19:
-#line 122 "bison/cm.y" /* yacc.c:1646  */
+#line 126 "bison/cm.y" /* yacc.c:1646  */
     {
-						tac_cell *tmp = make_tac_cell((yyvsp[-2].addr), (yyvsp[0].addr), (ADD));
-						tac_table[tac_counter++] = tmp;
-						(yyval.addr) = make_tmp(tmp);}
-#line 1398 "src/parse.c" /* yacc.c:1646  */
+						tac_cell tmp = {.source1=(yyvsp[-2].addr), .source2=(yyvsp[0].addr), .inst=ADD};
+						tac_table[tac_counter] = tmp;
+						(yyval.addr) = make_tmp(tac_counter++);}
+#line 1397 "src/parse.c" /* yacc.c:1646  */
     break;
 
   case 20:
-#line 126 "bison/cm.y" /* yacc.c:1646  */
+#line 130 "bison/cm.y" /* yacc.c:1646  */
     {
-						tac_cell *tmp = make_tac_cell((yyvsp[-2].addr), (yyvsp[0].addr), (SUB));
-						tac_table[tac_counter++] = tmp;
-						(yyval.addr) = make_tmp(tmp);}
-#line 1407 "src/parse.c" /* yacc.c:1646  */
+						tac_cell tmp = {.source1=(yyvsp[-2].addr), .source2=(yyvsp[0].addr), .inst=SUB};
+						tac_table[tac_counter] = tmp;
+						tac_address t = make_tmp(tac_counter++);
+						print_tac_address(stdout, t);
+						(yyval.addr) = t;}
+#line 1408 "src/parse.c" /* yacc.c:1646  */
     break;
 
   case 21:
-#line 130 "bison/cm.y" /* yacc.c:1646  */
+#line 136 "bison/cm.y" /* yacc.c:1646  */
     {;}
-#line 1413 "src/parse.c" /* yacc.c:1646  */
+#line 1414 "src/parse.c" /* yacc.c:1646  */
     break;
 
   case 22:
-#line 134 "bison/cm.y" /* yacc.c:1646  */
+#line 140 "bison/cm.y" /* yacc.c:1646  */
     {
-						tac_cell *tmp = make_tac_cell((yyvsp[-2].addr), (yyvsp[0].addr), (MUL));
-						tac_table[tac_counter++] = tmp;
-						(yyval.addr) = make_tmp(tmp);}
-#line 1422 "src/parse.c" /* yacc.c:1646  */
+						tac_cell tmp = {.source1=(yyvsp[-2].addr), .source2=(yyvsp[0].addr), .inst=MUL};
+						tac_table[tac_counter] = tmp;
+						tac_address t = make_tmp(tac_counter++);
+						print_tac_address(stdout, t);
+						(yyval.addr) = t;}
+#line 1425 "src/parse.c" /* yacc.c:1646  */
     break;
 
   case 23:
-#line 138 "bison/cm.y" /* yacc.c:1646  */
+#line 146 "bison/cm.y" /* yacc.c:1646  */
     {
-						tac_cell *tmp = make_tac_cell((yyvsp[-2].addr), (yyvsp[0].addr), (DIV));
-						tac_table[tac_counter++] = tmp;
-						(yyval.addr) = make_tmp(tmp);}
-#line 1431 "src/parse.c" /* yacc.c:1646  */
+						tac_cell tmp = {.source1=(yyvsp[-2].addr), .source2=(yyvsp[0].addr), .inst=DIV};
+						tac_table[tac_counter] = tmp;
+						(yyval.addr) = make_tmp(tac_counter++);}
+#line 1434 "src/parse.c" /* yacc.c:1646  */
     break;
 
   case 24:
-#line 142 "bison/cm.y" /* yacc.c:1646  */
+#line 150 "bison/cm.y" /* yacc.c:1646  */
     {;}
-#line 1437 "src/parse.c" /* yacc.c:1646  */
+#line 1440 "src/parse.c" /* yacc.c:1646  */
     break;
 
   case 25:
-#line 146 "bison/cm.y" /* yacc.c:1646  */
+#line 154 "bison/cm.y" /* yacc.c:1646  */
     {;}
-#line 1443 "src/parse.c" /* yacc.c:1646  */
+#line 1446 "src/parse.c" /* yacc.c:1646  */
     break;
 
   case 26:
-#line 147 "bison/cm.y" /* yacc.c:1646  */
+#line 155 "bison/cm.y" /* yacc.c:1646  */
     {(yyval.addr) = (tac_address){.name = (yyvsp[0].id), .addr_type = NAME};}
-#line 1449 "src/parse.c" /* yacc.c:1646  */
+#line 1452 "src/parse.c" /* yacc.c:1646  */
     break;
 
   case 27:
-#line 148 "bison/cm.y" /* yacc.c:1646  */
+#line 156 "bison/cm.y" /* yacc.c:1646  */
     {(yyval.addr) = (tac_address){.constant = (yyvsp[0].num), .addr_type = CONST};}
-#line 1455 "src/parse.c" /* yacc.c:1646  */
+#line 1458 "src/parse.c" /* yacc.c:1646  */
     break;
 
   case 28:
-#line 151 "bison/cm.y" /* yacc.c:1646  */
+#line 159 "bison/cm.y" /* yacc.c:1646  */
     {;}
-#line 1461 "src/parse.c" /* yacc.c:1646  */
+#line 1464 "src/parse.c" /* yacc.c:1646  */
     break;
 
 
-#line 1465 "src/parse.c" /* yacc.c:1646  */
+#line 1468 "src/parse.c" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -1689,13 +1692,13 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 153 "bison/cm.y" /* yacc.c:1906  */
+#line 161 "bison/cm.y" /* yacc.c:1906  */
 
 
 void print_tac_address(FILE *stream, tac_address addr) {
 	switch (addr.addr_type) {
 		case TEMP:
-			fprintf(stream, "(%d)", (addr.temporary - &tac_table[0]));
+			fprintf(stream, "(%d)", addr.temporary);
 			break;
 
 		case CONST:
@@ -1708,11 +1711,11 @@ void print_tac_address(FILE *stream, tac_address addr) {
 	}
 }
 
-void print_tac_cell(tac_cell *cell, int lineno) {
-	printf("%d: %s ", lineno, str_inst[cell->inst]);
-	print_tac_address(stdout, cell->source1);
+void print_tac_cell(tac_cell cell, int lineno) {
+	printf("%d: %s ", lineno, str_inst[cell.inst]);
+	print_tac_address(stdout, cell.source1);
 	printf(" ");
-	print_tac_address(stdout, cell->source2);
+	print_tac_address(stdout, cell.source2);
 	printf("\n");
 }
 
@@ -1726,6 +1729,7 @@ int main(int argc, char **argv) {
 //	yydebug = 1;
 	yyparse();
 
+	// botamos para ficar padronizado com o tamanho do tac_counter
 	for (int i = 0; i < tac_counter; i++) {
 		print_tac_cell(tac_table[i], i);
 	}

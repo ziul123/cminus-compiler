@@ -43,7 +43,7 @@ typedef struct tac_cell tac_cell;
 struct st_cell {
 	// Celula da tabela de simbolos
 	const char *name;
-	size_t tac_addr;
+	int tac_addr;
 	uint32_t mem_addr;
 };
 
@@ -58,7 +58,7 @@ static const char * const str_inst[] = {
 struct tac_address {
 	// Endereco para codigo de 3 enderecos
 	union {
-		size_t temporary;
+		int temporary;
 		int constant;
 		const char *name;
 	};
@@ -70,10 +70,10 @@ struct tac_cell {
 	enum INST inst;
 	tac_address source1;
 	tac_address source2;
-	size_t jmp_addr;		// Endereco para pulos
+	int jmp_addr;		// Endereco para pulos
 };
 
-tac_address make_tmp(tac_cell *addr);
+tac_address make_tmp(int tac_cell);
 
 tac_cell *make_tac_cell(tac_address s1, tac_address s2, enum INST inst);
 
