@@ -62,6 +62,7 @@ int label_counter = 0;
 			RETURN
 			COMMA
 
+
 %printer { fprintf(yyo, "%d", $$); } <num>;
 %printer { fprintf(yyo, "%s", $$); } <id>;
 %printer { print_tac_address(yyo, $$); } <addr>;
@@ -225,8 +226,8 @@ var: ID {;}
 /* Comandos de controle de fluxo */
 
 if_cmd:
-    IF LPAREN expr RPAREN cmd {;}
-    | IF LPAREN expr RPAREN cmd ELSE cmd {;}
+    IF LPAREN expr RPAREN bloco_cmd {;}
+    | IF LPAREN expr RPAREN bloco_cmd ELSE bloco_cmd {;}
     ;
 
 while_cmd:
