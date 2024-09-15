@@ -20,17 +20,27 @@ lparen \(
 rparen \)
 lcurly \{
 rcurly \}
-end_cmd ;
+semicolon ;
 gt \>
 lt \<
 gt_eq \>\=
 lt_eq \<\=
 eq_eq \=\=
 neq	\!\=
+
 outro .
 
 %x ML_COMMENT
 %%
+
+int			{return INT;}
+void		{return VOID;}
+if			{return IF;}
+else		{return ELSE;}
+while		{return WHILE;}
+return	{return RETURN;}
+,				{return COMMA;}
+
 {id}		{
 					yylval.id = strdup(yytext);
 					if (!yylval.id)
@@ -54,7 +64,7 @@ outro .
 {rparen}		{return RPAREN;}
 {lcurly}		{return LCURLY;}
 {rcurly}		{return RCURLY;}
-{end_cmd}		{return END_CMD;}
+{semicolon}	{return SEMICOLON;}
 %%
 
 int yywrap() {

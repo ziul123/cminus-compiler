@@ -62,13 +62,22 @@ extern int yydebug;
     RPAREN = 266,
     LCURLY = 267,
     RCURLY = 268,
-    END_CMD = 269,
-    GT = 270,
-    LT = 271,
-    GT_EQ = 272,
-    LT_EQ = 273,
-    EQ_EQ = 274,
-    NEQ = 275
+    LBRACK = 269,
+    RBRACK = 270,
+    SEMICOLON = 271,
+    GT = 272,
+    LT = 273,
+    GT_EQ = 274,
+    LT_EQ = 275,
+    EQ_EQ = 276,
+    NEQ = 277,
+    INT = 278,
+    VOID = 279,
+    IF = 280,
+    ELSE = 281,
+    WHILE = 282,
+    RETURN = 283,
+    COMMA = 284
   };
 #endif
 
@@ -83,7 +92,7 @@ union YYSTYPE
 	char *id;
 	tac_address addr;
 
-#line 87 "src/parse.h" /* yacc.c:1909  */
+#line 96 "src/parse.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;

@@ -45,13 +45,22 @@ int label_counter = 0;
 			RPAREN
 			LCURLY
 			RCURLY
-			END_CMD
+			LBRACK
+			RBRACK
+			SEMICOLON
 			GT
 			LT
 			GT_EQ
 			LT_EQ
 			EQ_EQ
 			NEQ
+			INT
+			VOID
+			IF
+			ELSE
+			WHILE
+			RETURN
+			COMMA
 
 %printer { fprintf(yyo, "%d", $$); } <num>;
 %printer { fprintf(yyo, "%s", $$); } <id>;
@@ -63,106 +72,187 @@ int label_counter = 0;
 /* neste nosso exemplo quase todas as acoes estao vazias */
 
 programa:
-					lista_cmds	{printf("Programa sintaticamente correto\n");}
-					;
+    lista_declaracoes {printf("Programa sintaticamente correto\n");}
+    ;
+
+lista_declaracoes:
+    declaracao 											{;}
+    | lista_declaracoes declaracao 	{;}
+    ;
+
+declaracao:
+    declaracao_var 		{;}
+		| declaracao_fun 	{;}
+		;
+
+declaracao_var:
+		tipo ID SEMICOLON {;}
+		| tipo ID LBRACK NUM RBRACK SEMICOLON {;}
+		;
+
+declaracao_fun:
+		tipo ID LPAREN parametros RPAREN bloco_cmd {;}
+    ;
+
+tipo:
+    VOID 	{;}
+    | INT {;}
+    ;
+
+parametros:
+    lista_parametros {;}
+    | VOID {;}
+    ;
+
+lista_parametros:
+    param {;}
+    | lista_parametros COMMA param {;}
+    ;
+
+param:
+    tipo ID {;}
+		| tipo ID LBRACK RBRACK {;}
+    ;
+
+declaracoes_locais:
+		/* empty */
+		| declaracoes_locais declaracao_var
 
 lista_cmds:
-					/* empty */
-					| lista_cmds cmd	{;}
-					;
+    /* empty */
+    | lista_cmds cmd {;}
+    ;
 
 cmd:
-					expr_cmd	{;}
-					| bloco_cmd	{;}
-					;
+    expr_cmd {;}
+    | bloco_cmd {;}
+    | if_cmd {;}
+    | while_cmd {;}
+    | ret_cmd {;}
+    ;
 
 bloco_cmd:
-				 	LCURLY lista_cmds RCURLY	{;}
-					;
+    LCURLY declaracoes_locais lista_cmds RCURLY {;}
+    ;
 
 expr_cmd:
-					expr END_CMD	{;}
-					| END_CMD			{;}
-					;
+    expr SEMICOLON {;}
+    | SEMICOLON {;}
+    ;
 
 expr:
-					var EQUAL expr	{
-						tac_address id = {.name = $1, .addr_type = NAME};
-						tac_cell tmp = {.source1=id, .source2=$3, .inst=CPY};
-						tac_table[tac_counter] = tmp;
-						$$ = make_tmp(tac_counter++);}
+		var EQUAL expr	{
+			tac_address id = {.name = $1, .addr_type = NAME};
+			tac_cell tmp = {.source1=id, .source2=$3, .inst=CPY};
+			tac_table[tac_counter] = tmp;
+			$$ = make_tmp(tac_counter++);}
 
-					| expr_simples	{;}
-					;
+    | expr_simples {;}
+    ;
 
 expr_simples:
-					expr_ad GT expr_ad			{
-						tac_cell tmp = {.source1=$1, .source2=$3, .inst=SGT};
-						tac_table[tac_counter] = tmp;
-						$$ = make_tmp(tac_counter++);}
+		expr_ad GT expr_ad			{
+			tac_cell tmp = {.source1=$1, .source2=$3, .inst=SGT};
+			tac_table[tac_counter] = tmp;
+			$$ = make_tmp(tac_counter++);}
 
-					| expr_ad LT expr_ad		{
-						tac_cell tmp = {.source1=$1, .source2=$3, .inst=SLT};
-						tac_table[tac_counter] = tmp;
-						$$ = make_tmp(tac_counter++);}
+		| expr_ad LT expr_ad		{
+			tac_cell tmp = {.source1=$1, .source2=$3, .inst=SLT};
+			tac_table[tac_counter] = tmp;
+			$$ = make_tmp(tac_counter++);}
 
-					| expr_ad GT_EQ expr_ad	{
-						tac_cell tmp = {.source1=$1, .source2=$3, .inst=SGTE};
-						tac_table[tac_counter] = tmp;
-						$$ = make_tmp(tac_counter++);}
+		| expr_ad GT_EQ expr_ad	{
+			tac_cell tmp = {.source1=$1, .source2=$3, .inst=SGTE};
+			tac_table[tac_counter] = tmp;
+			$$ = make_tmp(tac_counter++);}
 
-					| expr_ad LT_EQ expr_ad	{
-						tac_cell tmp = {.source1=$1, .source2=$3, .inst=SLTE};
-						tac_table[tac_counter] = tmp;
-						$$ = make_tmp(tac_counter++);}
+		| expr_ad LT_EQ expr_ad	{
+			tac_cell tmp = {.source1=$1, .source2=$3, .inst=SLTE};
+			tac_table[tac_counter] = tmp;
+			$$ = make_tmp(tac_counter++);}
 
-					| expr_ad EQ_EQ expr_ad	{
-						tac_cell tmp = {.source1=$1, .source2=$3, .inst=SEQ};
-						tac_table[tac_counter] = tmp;
-						$$ = make_tmp(tac_counter++);}
+		| expr_ad EQ_EQ expr_ad	{
+			tac_cell tmp = {.source1=$1, .source2=$3, .inst=SEQ};
+			tac_table[tac_counter] = tmp;
+			$$ = make_tmp(tac_counter++);}
 
-					| expr_ad NEQ expr_ad		{
-						tac_cell tmp = {.source1=$1, .source2=$3, .inst=SNEQ};
-						tac_table[tac_counter] = tmp;
-						$$ = make_tmp(tac_counter++);}
-					| expr_ad	{;}
-					;
+		| expr_ad NEQ expr_ad		{
+			tac_cell tmp = {.source1=$1, .source2=$3, .inst=SNEQ};
+			tac_table[tac_counter] = tmp;
+			$$ = make_tmp(tac_counter++);}
+
+		| expr_ad	{;}
+		;
 
 expr_ad:
-			 		expr_ad PLUS termo		{
-						tac_cell tmp = {.source1=$1, .source2=$3, .inst=ADD};
-						tac_table[tac_counter] = tmp;
-						$$ = make_tmp(tac_counter++);}
+		expr_ad PLUS termo		{
+			tac_cell tmp = {.source1=$1, .source2=$3, .inst=ADD};
+			tac_table[tac_counter] = tmp;
+			$$ = make_tmp(tac_counter++);}
 
-			 		| expr_ad MINUS termo	{
-						tac_cell tmp = {.source1=$1, .source2=$3, .inst=SUB};
-						tac_table[tac_counter] = tmp;
-						$$ = make_tmp(tac_counter++);}
+		| expr_ad MINUS termo	{
+			tac_cell tmp = {.source1=$1, .source2=$3, .inst=SUB};
+			tac_table[tac_counter] = tmp;
+			$$ = make_tmp(tac_counter++);}
 
-					| termo	{;}
-					;
+		| termo	{;}
+		;
 
 termo:
-		 			termo ASTERISK fator	{
-						tac_cell tmp = {.source1=$1, .source2=$3, .inst=MUL};
-						tac_table[tac_counter] = tmp;
-						$$ = make_tmp(tac_counter++);}
+		termo ASTERISK fator	{
+			tac_cell tmp = {.source1=$1, .source2=$3, .inst=MUL};
+			tac_table[tac_counter] = tmp;
+			$$ = make_tmp(tac_counter++);}
 
-		 			| termo SLASH fator		{
-						tac_cell tmp = {.source1=$1, .source2=$3, .inst=DIV};
-						tac_table[tac_counter] = tmp;
-						$$ = make_tmp(tac_counter++);}
+		| termo SLASH fator		{
+			tac_cell tmp = {.source1=$1, .source2=$3, .inst=DIV};
+			tac_table[tac_counter] = tmp;
+			$$ = make_tmp(tac_counter++);}
 
-					| fator	{;}
-					;
+		| fator	{;}
+		;
 
 fator:
-		 			LPAREN expr RPAREN	{$$ = $2;}
-					| var	{$$ = (tac_address){.name = $1, .addr_type = NAME};}
-					| NUM	{$$ = (tac_address){.constant = $1, .addr_type = CONST};}
-					;
+		LPAREN expr RPAREN	{$$ = $2;}
+		| var	{$$ = (tac_address){.name = $1, .addr_type = NAME};}
+		| NUM	{$$ = (tac_address){.constant = $1, .addr_type = CONST};}
+		| chamada_funcao {;}
+		;
 
 var: ID {;}
+	 	| ID LBRACK expr RBRACK {;}
+
+/* Comandos de controle de fluxo */
+
+if_cmd:
+    IF LPAREN expr RPAREN cmd {;}
+    | IF LPAREN expr RPAREN cmd ELSE cmd {;}
+    ;
+
+while_cmd:
+    WHILE LPAREN expr RPAREN cmd {;}
+    ;
+
+ret_cmd:
+    RETURN SEMICOLON {;}
+    | RETURN expr SEMICOLON {;}
+    ;
+
+/* Chamadas de função e argumentos */
+
+chamada_funcao:
+    ID LPAREN argumentos RPAREN {;}
+    ;
+
+argumentos:
+		/* empty */
+		| lista_argumentos {;}
+		;
+
+lista_argumentos:
+		expr {;}
+		| lista_argumentos COMMA expr {;}
+		;
 
 %%
 
@@ -210,5 +300,3 @@ int yyerror (char *s) /* Called by yyparse on error */
 	printf ("Erro na linha %d\n", yylineno);
 	exit(1);
 }
-
-
