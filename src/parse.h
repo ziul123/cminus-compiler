@@ -40,7 +40,7 @@
 extern int yydebug;
 #endif
 /* "%code requires" blocks.  */
-#line 6 "bison/cm.y" /* yacc.c:1909  */
+#line 7 "bison/cm.y" /* yacc.c:1909  */
 
 #include "tables.h"
 
@@ -77,7 +77,7 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 10 "bison/cm.y" /* yacc.c:1909  */
+#line 11 "bison/cm.y" /* yacc.c:1909  */
 
 	int num;
 	char *id;

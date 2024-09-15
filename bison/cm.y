@@ -1,5 +1,6 @@
 %code top{
 #include <stdio.h> 
+#include <stdlib.h>
 #define YYDEBUG 1
 }
 
@@ -52,7 +53,9 @@ int label_counter = 0;
 			EQ_EQ
 			NEQ
 
-//%printer { print_tac_address(yyo, $$); } <tac_address>;
+%printer { fprintf(yyo, "%d", $$); } <num>;
+%printer { fprintf(yyo, "%s", $$); } <id>;
+%printer { print_tac_address(yyo, $$); } <addr>;
 
 
 %%
@@ -83,9 +86,12 @@ expr_cmd:
 					;
 
 expr:
-					var EQUAL expr		{
-						yyval.addr.addr_type = NAME;
-					}
+					var EQUAL expr	{
+						tac_address id = {.name = $1, .addr_type = NAME};
+						tac_cell tmp = {.source1=id, .source2=$3, .inst=CPY};
+						tac_table[tac_counter] = tmp;
+						$$ = make_tmp(tac_counter++);}
+
 					| expr_simples	{;}
 					;
 
@@ -127,12 +133,12 @@ expr_ad:
 						tac_cell tmp = {.source1=$1, .source2=$3, .inst=ADD};
 						tac_table[tac_counter] = tmp;
 						$$ = make_tmp(tac_counter++);}
+
 			 		| expr_ad MINUS termo	{
 						tac_cell tmp = {.source1=$1, .source2=$3, .inst=SUB};
 						tac_table[tac_counter] = tmp;
-						tac_address t = make_tmp(tac_counter++);
-						print_tac_address(stdout, t);
-						$$ = t;}
+						$$ = make_tmp(tac_counter++);}
+
 					| termo	{;}
 					;
 
@@ -140,23 +146,23 @@ termo:
 		 			termo ASTERISK fator	{
 						tac_cell tmp = {.source1=$1, .source2=$3, .inst=MUL};
 						tac_table[tac_counter] = tmp;
-						tac_address t = make_tmp(tac_counter++);
-						print_tac_address(stdout, t);
-						$$ = t;}
+						$$ = make_tmp(tac_counter++);}
+
 		 			| termo SLASH fator		{
 						tac_cell tmp = {.source1=$1, .source2=$3, .inst=DIV};
 						tac_table[tac_counter] = tmp;
 						$$ = make_tmp(tac_counter++);}
+
 					| fator	{;}
 					;
 
 fator:
-		 			LPAREN expr RPAREN	{;}
+		 			LPAREN expr RPAREN	{$$ = $2;}
 					| var	{$$ = (tac_address){.name = $1, .addr_type = NAME};}
 					| NUM	{$$ = (tac_address){.constant = $1, .addr_type = CONST};}
 					;
 
-var: ID {;};
+var: ID {;}
 
 %%
 
@@ -177,7 +183,7 @@ void print_tac_address(FILE *stream, tac_address addr) {
 }
 
 void print_tac_cell(tac_cell cell, int lineno) {
-	printf("%d: %s ", lineno, str_inst[cell.inst]);
+	printf("%d\t %s ", lineno, str_inst[cell.inst]);
 	print_tac_address(stdout, cell.source1);
 	printf(" ");
 	print_tac_address(stdout, cell.source2);
@@ -202,6 +208,7 @@ int main(int argc, char **argv) {
 int yyerror (char *s) /* Called by yyparse on error */
 {
 	printf ("Erro na linha %d\n", yylineno);
+	exit(1);
 }
 
 
