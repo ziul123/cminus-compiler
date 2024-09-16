@@ -32,6 +32,8 @@
 	/* Operacoes de array */ \
 	inst(ARR_GET) \
 	inst(ARR_SET) \
+	/* No Operation */ \
+	inst(NOP)
 
 #define GENERATE_ENUM(x) x, 
 #define GENERATE_LUT(x) [x] = #x, 
@@ -40,11 +42,21 @@ typedef struct st_cell st_cell;
 typedef struct tac_address tac_address;
 typedef struct tac_cell tac_cell;
 
+enum TYPE {INT_T, VOID_T, INT_ARR_T};
+
 struct st_cell {
 	// Celula da tabela de simbolos
 	const char *name;
-	int tac_addr;
 	uint32_t mem_addr;
+	enum TYPE sym_type;
+	int len;	// Caso for INT_ARR
+};
+
+struct ft_cell {
+	// Celula da tabela de funcoes
+	const char *name;
+	enum TYPE ret_type;
+	enum TYPE param_types[8];
 };
 
 enum INST {

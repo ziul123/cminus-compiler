@@ -71,13 +71,13 @@ extern int yydebug;
     LT_EQ = 275,
     EQ_EQ = 276,
     NEQ = 277,
-    INT = 278,
-    VOID = 279,
-    IF = 280,
-    ELSE = 281,
-    WHILE = 282,
-    RETURN = 283,
-    COMMA = 284
+    IF = 278,
+    ELSE = 279,
+    WHILE = 280,
+    RETURN = 281,
+    COMMA = 282,
+    INT = 283,
+    VOID = 284
   };
 #endif
 
