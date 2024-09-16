@@ -277,13 +277,13 @@ void print_tac_address(FILE *stream, tac_address addr) {
 void print_tac_cell(tac_cell cell, int lineno) {
 	printf("%d\t", lineno);
 	if (cell.line_addr)
-		printf("%s", cell.line_addr);
-	printf(" %s", str_inst[cell.inst]);
+		printf("%s: ", cell.line_addr);
+	printf(" %s ", str_inst[cell.inst]);
 	print_tac_address(stdout, cell.source1);
 	printf(" ");
 	print_tac_address(stdout, cell.source2);
-	if (cell.jmp_addr)
-		printf("%s", cell.jmp_addr);
+	if (cell.inst >= JMP && cell.inst <= BLE)
+		printf(" %s", cell.jmp_addr);
 	printf("\n");
 }
 
