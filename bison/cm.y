@@ -28,6 +28,7 @@ int label_counter = 0;
 
 %token <num> NUM
 %token <id> ID
+%nterm <enum TYPE> tipo
 %nterm <addr>
 			fator
 			termo
@@ -54,13 +55,13 @@ int label_counter = 0;
 			LT_EQ
 			EQ_EQ
 			NEQ
-			INT
-			VOID
 			IF
 			ELSE
 			WHILE
 			RETURN
 			COMMA
+			INT
+			VOID
 
 
 %printer { fprintf(yyo, "%d", $$); } <num>;
@@ -274,10 +275,15 @@ void print_tac_address(FILE *stream, tac_address addr) {
 }
 
 void print_tac_cell(tac_cell cell, int lineno) {
-	printf("%d\t %s ", lineno, str_inst[cell.inst]);
+	printf("%d\t", lineno);
+	if (cell.line_addr)
+		printf("%s", cell.line_addr);
+	printf(" %s", str_inst[cell.inst]);
 	print_tac_address(stdout, cell.source1);
 	printf(" ");
 	print_tac_address(stdout, cell.source2);
+	if (cell.jmp_addr)
+		printf("%s", cell.jmp_addr);
 	printf("\n");
 }
 
@@ -288,7 +294,7 @@ int main(int argc, char **argv) {
 			return 1;
 		}
 	}
-//	yydebug = 1;
+	yydebug = 1;
 	yyparse();
 
 	// botamos para ficar padronizado com o tamanho do tac_counter
