@@ -6,12 +6,14 @@
 
 %code requires {
 #include "tables.h"
+typedef struct strpair {char* str1; char* str2;} strpair;
 }
 
 %union {
 	int num;
 	char *id;
 	tac_address addr;
+	strpair pair;
 }
 
 %code {
@@ -24,7 +26,7 @@ st_cell symbol_table[4096];
 tac_cell tac_table[4096];
 int tac_counter = 0;
 int label_counter = 0;
-typedef struct strpair {char* str1; char* str2;} strpair;
+char *new_label();
 }
 
 %token <num> NUM
@@ -233,22 +235,22 @@ if_cmd:
     ;
 
 while_cmd:
-    WHILE LPAREN expr <strpair>{
+    WHILE LPAREN expr {
 
-        char* top_label = new_label[];
-        char* botton_label = new_label[];
+        char* top_label = new_label();
+        char* botton_label = new_label();
 
-        tac_cell tmp = {.jmp_addr=botton_label, .line_addr = top_label, .source1=$3, .inst=JF};
-        tac_table[tac_counter++] = tmp;
+        tac_cell tmp1 = {.jmp_addr=botton_label, .line_addr = top_label, .source1=$3, .inst=JF};
+        tac_table[tac_counter++] = tmp1;
 
-        $$ = (strpair){.str1 = top_label, .str2 = botton_label};
+        $<pair>$ = (strpair){.str1 = top_label, .str2 = botton_label};
     }RPAREN cmd {
 
-        tac_cell tmp = {.jmp_addr=$4.str1, .inst=JMP};
-        tac_table[tac_counter++] = tmp;
+        tac_cell tmp2 = {.jmp_addr=$<pair>4.str1, .inst=JMP};
+        tac_table[tac_counter++] = tmp2;
 
-        tac_cell tmp = { .line_addr = $4.str2, .inst=NOP};
-        tac_table[tac_counter++] = tmp;
+        tac_cell tmp3 = { .line_addr = $<pair>4.str2, .inst=NOP};
+        tac_table[tac_counter++] = tmp3;
         ;}
 
     ;
@@ -309,7 +311,7 @@ char *new_label(){
     char *l = malloc(10);
     if(!l)
         printf("Erro alocando label \n");
-    snprintf(l, "L%d", label_counter++);
+    sprintf(l, "L%d", label_counter++);
     return l;
 }
 
