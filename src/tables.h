@@ -32,6 +32,8 @@
 	/* Operacoes de array */ \
 	inst(ARR_GET) \
 	inst(ARR_SET) \
+ 	/* No Operation */ \
+ 	inst(NOP) \
 
 #define GENERATE_ENUM(x) x, 
 #define GENERATE_LUT(x) [x] = #x, 
@@ -65,12 +67,14 @@ struct tac_address {
 	enum ADDR_TYPE {TEMP, CONST, NAME} addr_type;
 };
 
+
 struct tac_cell {
 	// Celula da tabela do codigo de 3 enderecos
 	enum INST inst;
 	tac_address source1;
 	tac_address source2;
-	int jmp_addr;		// Endereco para pulos
+    char* line_addr; 	// Endereco da linha
+	char* jmp_addr;		// Endereco do pulo
 };
 
 tac_address make_tmp(int tac_cell);

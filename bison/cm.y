@@ -24,6 +24,7 @@ st_cell symbol_table[4096];
 tac_cell tac_table[4096];
 int tac_counter = 0;
 int label_counter = 0;
+typedef struct strpair {char* str1; char* str2;} strpair;
 }
 
 %token <num> NUM
@@ -231,7 +232,24 @@ if_cmd:
     ;
 
 while_cmd:
-    WHILE LPAREN expr RPAREN cmd {;}
+    WHILE LPAREN expr <strpair>{
+
+        char* top_label = new_label[];
+        char* botton_label = new_label[];
+
+        tac_cell tmp = {.jmp_addr=botton_label, .line_addr = top_label, .source1=$3, .inst=JF};
+        tac_table[tac_counter++] = tmp;
+
+        $$ = (strpair){.str1 = top_label, .str2 = botton_label};
+    }RPAREN cmd {
+
+        tac_cell tmp = {.jmp_addr=$4.str1, .inst=JMP};
+        tac_table[tac_counter++] = tmp;
+
+        tac_cell tmp = { .line_addr = $4.str2, .inst=NOP};
+        tac_table[tac_counter++] = tmp;
+        ;}
+
     ;
 
 ret_cmd:
@@ -280,6 +298,15 @@ void print_tac_cell(tac_cell cell, int lineno) {
 	print_tac_address(stdout, cell.source2);
 	printf("\n");
 }
+
+char *new_label(){
+    char *l = malloc(10);
+    if(!l)
+        printf("Erro alocando label \n");
+    snprintf(l, "L%d", label_counter++);
+    return l;
+}
+
 
 int main(int argc, char **argv) {
 	if (argc == 2) {
