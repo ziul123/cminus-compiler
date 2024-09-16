@@ -230,12 +230,51 @@ var: ID {;}
 /* Comandos de controle de fluxo */
 
 if_cmd:
-    IF LPAREN expr RPAREN bloco_cmd {;}
-    | IF LPAREN expr RPAREN bloco_cmd ELSE bloco_cmd {;}
-    ;
+    IF LPAREN expr RPAREN{
+
+      char* exit_label = new_label();
+
+      tac_cell jmp_exit = {.jmp_addr=exit_label, .source1=$3, .inst=JF};
+      tac_table[tac_counter++] = jmp_exit;
+
+      $<id>$ = exit_label;
+     } bloco_cmd {
+
+      tac_cell opr_exit = { .line_addr = $<idr>5, .inst=NOP};
+      tac_table[tac_counter++] = opr_exit;
+
+    }
+
+    | IF LPAREN expr RPAREN{
+
+      char* exit_label = new_label();
+      char* else_label = new_label();
+
+
+      tac_cell jmp_else = {.jmp_addr=else_label, .source1=$3, .inst=JF};
+      tac_table[tac_counter++] = jmp_else;
+
+      $<pair>$ = (strpair){.str1 = exit_label, .str2 = else_label};
+
+     }bloco_cmd {
+
+         tac_cell jump_exit = { .jump_addr = $<pair>5.str1, .inst=JMP};
+         tac_table[tac_counter++] = jump_exit;
+
+         tac_cell label_else = { .line_addr = $<pair>5.str2, .inst=NOP};
+         tac_table[tac_counter++] = label_else;
+
+     }
+     ELSE bloco_cmd {
+
+        tac_cell opr_exit = { .line_addr = $<pair>5.str1, .inst=NOP};
+        tac_table[tac_counter++] = opr_exit;
+     }
+
+
 
 while_cmd:
-    WHILE LPAREN expr {
+    WHILE LPAREN expr RPAREN{
 
         char* top_label = new_label();
         char* botton_label = new_label();
@@ -244,21 +283,28 @@ while_cmd:
         tac_table[tac_counter++] = tmp1;
 
         $<pair>$ = (strpair){.str1 = top_label, .str2 = botton_label};
-    }RPAREN cmd {
+    } cmd {
 
-        tac_cell tmp2 = {.jmp_addr=$<pair>4.str1, .inst=JMP};
+        tac_cell tmp2 = {.jmp_addr=$<pair>5.str1, .inst=JMP};
         tac_table[tac_counter++] = tmp2;
 
-        tac_cell tmp3 = { .line_addr = $<pair>4.str2, .inst=NOP};
+        tac_cell tmp3 = { .line_addr = $<pair>5.str2, .inst=NOP};
         tac_table[tac_counter++] = tmp3;
-        ;}
+    }
 
-    ;
+
 
 ret_cmd:
-    RETURN SEMICOLON {;}
-    | RETURN expr SEMICOLON {;}
-    ;
+    RETURN SEMICOLON {
+
+        tac_cell opr_ret = { .inst=RET};
+        tac_table[tac_counter++] = opt_ret;
+    }
+    | RETURN expr SEMICOLON {
+
+        tac_cell opr_ret_src = {.source1=$2, .inst=RET};
+        tac_table[tac_counter++] = opt_ret_src;
+    }
 
 /* Chamadas de função e argumentos */
 
