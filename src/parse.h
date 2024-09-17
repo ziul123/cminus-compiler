@@ -43,8 +43,9 @@ extern int yydebug;
 #line 7 "bison/cm.y" /* yacc.c:1909  */
 
 #include "tables.h"
+typedef struct strpair {char* str1; char* str2;} strpair;
 
-#line 48 "src/parse.h" /* yacc.c:1909  */
+#line 49 "src/parse.h" /* yacc.c:1909  */
 
 /* Token type.  */
 #ifndef YYTOKENTYPE
@@ -86,14 +87,15 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 11 "bison/cm.y" /* yacc.c:1909  */
+#line 12 "bison/cm.y" /* yacc.c:1909  */
 
 	int num;
 	char *id;
 	tac_address addr;
 	type_t type_var;
+	strpair pair;
 
-#line 97 "src/parse.h" /* yacc.c:1909  */
+#line 99 "src/parse.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;

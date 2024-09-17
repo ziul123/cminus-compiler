@@ -2,18 +2,6 @@
 #include <stdlib.h>
 #include "tables.h"
 
-void add_param_t(ft_cell *fun, type_t p_type) {
-	int i = 0;
-	for (; i<=8; i++) {
-		if (fun->param_types[i] == VOID_T) {
-			fun->param_types[i] = p_type;
-			break;
-		}
-	if (i > 8)
-		printf("Erro na função [%s]: funções podem ter no máximo 8 parametros.\n", fun->name);
-	}
-}
-
 void insert_sym(st_cell **sym_table, const char *name, type_t sym_type, int len) {
 	st_cell *new_symbol = malloc(sizeof(st_cell));
 	if (!new_symbol)

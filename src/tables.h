@@ -64,10 +64,6 @@ struct st_cell {
 struct ft_cell {
 	// Celula da tabela de funcoes
 	const char *name;
-	type_t ret_type;
-	// Limitamos para 8 argumentos, pois é a quantidade 
-	// de registradores de argumento no RISC-V
-	type_t param_types[8];
 	int usado;
 };
 
@@ -98,8 +94,6 @@ struct tac_cell {
 	char* line_addr; 	// Endereco da linha
 	char* jmp_addr;		// Endereco do pulo
 };
-
-void add_param_t(ft_cell *fun, type_t p_type);
 
 void insert_sym(st_cell **sym_table, const char *name, type_t sym_type, int len);
 

@@ -27,9 +27,7 @@ void print_tac_address(FILE *stream, tac_address addr);
 void print_ft_cell(ft_cell fun);
 void print_st_cell(st_cell symbol);
 
-//st_cell **symbol_table;
-#define MAX_NEST 10
-st_cell **environment[MAX_NEST];
+st_cell **symbol_table;
 ft_cell fun_table[4096];
 tac_cell tac_table[4096];
 
@@ -101,30 +99,22 @@ declaracao:
 
 declaracao_var:
 		tipo ID SEMICOLON {
-			st_cell **symbol_table = environment[st_counter];
 			insert_sym(symbol_table, $2, INT_T, 0);
 		}
 		| tipo ID LBRACK NUM RBRACK SEMICOLON {
-			st_cell **symbol_table = environment[st_counter];
 			insert_sym(symbol_table, $2, INT_ARR_T, $4);
 		}
 		;
 
 declaracao_fun:
 		tipo ID {
-			ft_cell new_fun = (ft_cell){.name=$2, .ret_type=$1};
+			ft_cell new_fun = (ft_cell){.name=$2};
 			fun_table[fun_counter] = new_fun;
-			st_counter++;	//entra no escopo da funcao
-			environment[st_counter] = malloc(sizeof(st_cell*));
-			if (!environment[st_counter])
-				printf("Erro alocando memoria para escopo\n");
 		}
 		LPAREN parametros RPAREN {
 			fun_counter++;
 		}
-		bloco_cmd {
-			destroy_st(environment[st_counter]); 
-			st_counter--;}
+		bloco_cmd {;}
     ;
 
 tipo:
@@ -134,7 +124,7 @@ tipo:
 
 parametros:
     lista_parametros {;}
-    | VOID {fun_table[fun_counter].param_types[0] = VOID_T;}
+    | VOID {;}
     ;
 
 lista_parametros:
@@ -144,14 +134,10 @@ lista_parametros:
 
 param:
 		tipo ID LBRACK RBRACK {
-			st_cell **symbol_table = environment[st_counter];
 			insert_sym(symbol_table, $2, INT_ARR_T, 0);
-			add_param_t(&fun_table[fun_counter], INT_ARR_T);
 		}
     | tipo ID {
-			st_cell **symbol_table = environment[st_counter];
 			insert_sym(symbol_table, $2, INT_T, 0);
-			add_param_t(&fun_table[fun_counter], INT_T);
 		}
     ;
 
@@ -173,15 +159,7 @@ cmd:
     ;
 
 bloco_cmd:
-    LCURLY {
-			st_counter++;	//entra no escopo do bloco
-			environment[st_counter] = malloc(sizeof(st_cell*));
-			if (!environment[st_counter])
-				printf("Erro alocando memoria para escopo\n");
-		} 
-		declaracoes_locais lista_cmds RCURLY {
-			destroy_st(environment[st_counter]); 
-			st_counter--;}
+    LCURLY declaracoes_locais lista_cmds RCURLY {;}
     ;
 
 expr_cmd:
@@ -269,14 +247,10 @@ fator:
 
 var: ID {/* checar se ID foi declarada */
 	 		int found = 0;
-	 		for (int i=st_counter; i>=0; i--) {
-				st_cell **symbol_table = environment[i];
-				st_cell *symbol = find_sym(symbol_table, $1);
-				if (symbol) {
-					found = 1;
-					symbol->usado = 1;
-					break;
-				}
+			st_cell *symbol = find_sym(symbol_table, $1);
+			if (symbol) {
+				found = 1;
+				symbol->usado = 1;
 			}
 
 			if(!found) {
@@ -288,7 +262,6 @@ var: ID {/* checar se ID foi declarada */
 	 	| ID LBRACK expr RBRACK {
 	 		int found = 0;
 	 		for (int i=st_counter; i>=0; i--) {
-				st_cell **symbol_table = environment[i];
 				st_cell *symbol = find_sym(symbol_table, $1);
 				if (symbol) {
 					found = 1;
@@ -302,11 +275,12 @@ var: ID {/* checar se ID foi declarada */
 				exit(1);
 			}
 			}
+			;
 
 /* Comandos de controle de fluxo */
 
 if_cmd:
-    IF LPAREN expr RPAREN{
+    IF LPAREN expr RPAREN {
 
       char* exit_label = new_label();
 
@@ -316,12 +290,12 @@ if_cmd:
       $<id>$ = exit_label;
      } bloco_cmd {
 
-      tac_cell opr_exit = { .line_addr = $<idr>5, .inst=NOP};
+      tac_cell opr_exit = { .line_addr = $<id>5, .inst=NOP};
       tac_table[tac_counter++] = opr_exit;
 
     }
 
-    | IF LPAREN expr RPAREN{
+    | IF LPAREN expr RPAREN {
 
       char* exit_label = new_label();
       char* else_label = new_label();
@@ -332,9 +306,9 @@ if_cmd:
 
       $<pair>$ = (strpair){.str1 = exit_label, .str2 = else_label};
 
-     }bloco_cmd {
+     } bloco_cmd {
 
-         tac_cell jump_exit = { .jump_addr = $<pair>5.str1, .inst=JMP};
+         tac_cell jump_exit = { .jmp_addr = ($<pair>5.str1), .inst=JMP};
          tac_table[tac_counter++] = jump_exit;
 
          tac_cell label_else = { .line_addr = $<pair>5.str2, .inst=NOP};
@@ -346,6 +320,7 @@ if_cmd:
         tac_cell opr_exit = { .line_addr = $<pair>5.str1, .inst=NOP};
         tac_table[tac_counter++] = opr_exit;
      }
+		 ;
 
 
 
@@ -367,20 +342,16 @@ while_cmd:
         tac_cell tmp3 = { .line_addr = $<pair>5.str2, .inst=NOP};
         tac_table[tac_counter++] = tmp3;
     }
-
+		;
 
 
 ret_cmd:
     RETURN SEMICOLON {
 
-        tac_cell opr_ret = { .inst=RET};
-        tac_table[tac_counter++] = opt_ret;
+        tac_cell op_ret = { .inst=RET};
+        tac_table[tac_counter++] = op_ret;
     }
-    | RETURN expr SEMICOLON {
-
-        tac_cell opr_ret_src = {.source1=$2, .inst=RET};
-        tac_table[tac_counter++] = opt_ret_src;
-    }
+		;
 
 /* Chamadas de função e argumentos */
 
@@ -415,18 +386,11 @@ void print_st_cell(st_cell symbol) {
 	printf("%s: %s", symbol.name, str_type[symbol.sym_type]);
 	if (symbol.sym_type == INT_ARR_T)
 		printf("[%d]", symbol.len);
+	printf(" (usado: %s)\n", symbol.usado?"sim":"nao");
 }
 
 void print_ft_cell(ft_cell fun) {
-	printf("%s %s(", str_type[fun.ret_type], fun.name);
-	printf("%s", str_type[fun.param_types[0]]);
-	for (int i=1; i<=8; i++) {
-		if (fun.param_types[i] == VOID_T)
-			break;
-		printf(", ");
-		printf("%s", str_type[fun.param_types[i]]);
-	}
-	printf(")");
+	printf("%s\n", fun.name);
 }
 
 void print_tac_address(FILE *stream, tac_address addr) {
@@ -474,18 +438,15 @@ int main(int argc, char **argv) {
 			return 1;
 		}
 	}
-	environment[0] = malloc(sizeof(st_cell*));
-	if (!environment[0])
-		printf("Erro alocando memoria para escopo\n");
+	symbol_table = malloc(sizeof(st_cell*));
 
 //	yydebug = 1;
 	yyparse();
 
-
-	st_cell **symbol_table = environment[st_counter];
 	st_cell *current = *symbol_table;
 	if (current) {
 		while (current) {
+			//print_st_cell(*current);
 			if (!current->usado)
 				printf("WARNING: Variavel %s declarada mas nao utilizada!\n", current->name);
 			current = current->next;
