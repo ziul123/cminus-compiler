@@ -1846,7 +1846,7 @@ yyreduce:
     {
 			int flag = 0;
 			for (int i=0; i<fun_counter; i++) {
-				if (fun_table[i].name == (yyvsp[-2].id)) {
+				if (strcmp(fun_table[i].name, (yyvsp[-2].id)) == 0) {
 					flag = 1;
 					fun_table[i].usado = 1;
 					break;
@@ -2147,7 +2147,7 @@ void print_tac_cell(tac_cell cell, int lineno) {
 	print_tac_address(stdout, cell.source1);
 	printf(" ");
 	print_tac_address(stdout, cell.source2);
-	if (cell.inst >= JMP && cell.inst <= BLE)
+	if (cell.inst >= JMP && cell.inst <= CALL)
 		printf(" %s", cell.jmp_addr);
 	printf("\n");
 }

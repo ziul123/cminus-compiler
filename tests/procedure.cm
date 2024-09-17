@@ -1,0 +1,12 @@
+int x; int y;
+
+proc test {
+	x = 2;
+	y = 3;
+	return;
+}
+
+proc main {
+	test();
+	return;
+}
