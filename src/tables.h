@@ -27,7 +27,6 @@
 	inst(BLT) \
 	inst(BLE) \
 	/* Operacoes de chamada de funcao */ \
-	inst(PARAM) \
 	inst(CALL) \
 	inst(RET) \
 	/* Operacoes de array */ \

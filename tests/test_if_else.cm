@@ -1,0 +1,11 @@
+int x; int y;
+
+proc main {
+	x = 3;
+	if (x) {
+		y = y * (1 + 2);
+	} else {
+		x = y;
+	}
+}
+

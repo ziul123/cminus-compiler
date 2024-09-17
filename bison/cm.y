@@ -264,45 +264,39 @@ var: ID {/* checar se ID foi declarada */
 
 /* Comandos de controle de fluxo */
 
-if_cmd:
-    IF LPAREN expr RPAREN {
-
+/* como if e if-else tem prefixo em comum, essa regra e necessaria */
+if_prefix:
+		IF LPAREN expr RPAREN {
       char* exit_label = new_label();
+      char* else_label = new_label(); // tem que ser desfeito caso if
 
-      tac_cell jmp_exit = {.jmp_addr=exit_label, .source1=$3, .inst=JF};
-      tac_table[tac_counter++] = jmp_exit;
+      tac_cell jmp_else = {.jmp_addr=exit_label, .source1=$3, .inst=JF};
+      tac_table[tac_counter++] = jmp_else;
+      $<pair>$ = (strpair){.str1 = exit_label, .str2 = else_label};
+	}
+	;
 
-      $<id>$ = exit_label;
-     } bloco_cmd {
+if_cmd:
+    if_prefix bloco_cmd {
 
-      tac_cell opr_exit = { .line_addr = $<id>5, .inst=NOP};
+      tac_cell opr_exit = { .line_addr = ($<pair>1.str1), .inst=NOP};
       tac_table[tac_counter++] = opr_exit;
-
+			free($<pair>1.str2);	// nao foi usado
+			label_counter--;
     }
 
-    | IF LPAREN expr RPAREN {
+    | if_prefix bloco_cmd {
 
-      char* exit_label = new_label();
-      char* else_label = new_label();
-
-
-      tac_cell jmp_else = {.jmp_addr=else_label, .source1=$3, .inst=JF};
-      tac_table[tac_counter++] = jmp_else;
-
-      $<pair>$ = (strpair){.str1 = exit_label, .str2 = else_label};
-
-     } bloco_cmd {
-
-         tac_cell jump_exit = { .jmp_addr = ($<pair>5.str1), .inst=JMP};
+         tac_cell jump_exit = { .jmp_addr = ($<pair>1.str2), .inst=JMP};
          tac_table[tac_counter++] = jump_exit;
 
-         tac_cell label_else = { .line_addr = $<pair>5.str2, .inst=NOP};
+         tac_cell label_else = { .line_addr = ($<pair>1.str1), .inst=NOP};
          tac_table[tac_counter++] = label_else;
 
      }
      ELSE bloco_cmd {
 
-        tac_cell opr_exit = { .line_addr = $<pair>5.str1, .inst=NOP};
+        tac_cell opr_exit = { .line_addr = ($<pair>1.str2), .inst=NOP};
         tac_table[tac_counter++] = opr_exit;
      }
 		 ;

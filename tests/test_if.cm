@@ -1,0 +1,8 @@
+int x; int y;
+
+proc main {
+	if (x) {
+		y = y * (1 + 2);
+	}
+	x = y;
+}
