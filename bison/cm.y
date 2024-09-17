@@ -74,6 +74,8 @@ int label_counter = 0;
 			COMMA
 			INT
 			VOID
+			READ
+			WRITE
 
 
 %printer { fprintf(yyo, "%d", $$); } <num>;
@@ -168,6 +170,8 @@ cmd:
     | if_cmd {;}
     | while_cmd {;}
     | ret_cmd {;}
+	| read_cmd {;}
+	| write_cmd {;}
     ;
 
 bloco_cmd:
@@ -344,6 +348,14 @@ lista_argumentos:
 		expr {;}
 		| lista_argumentos COMMA expr {;}
 		;
+
+/* Comandos de entrada e saída */
+
+read_cmd:
+	READ var {;}
+
+write_cmd:
+	WRITE fator {;}
 
 %%
 void print_st_cell(st_cell symbol) {
