@@ -355,7 +355,7 @@ read_cmd:
 	READ var {;}
 
 write_cmd:
-	WRITE fator {;}
+	WRITE expr_simples {;}
 
 %%
 void print_st_cell(st_cell symbol) {

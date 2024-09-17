@@ -40,8 +40,10 @@ void		{return VOID;}
 if			{return IF;}
 else		{return ELSE;}
 while		{return WHILE;}
-return	{return RETURN;}
-,				{return COMMA;}
+return		{return RETURN;}
+,			{return COMMA;}
+read 		{return READ;}
+write 		{return WRITE;}
 
 {id}		{
 					yylval.id = strdup(yytext);
