@@ -1,7 +1,0 @@
-void main (void){
-    int i;
-    i = 3;
-    while(i){
-    i = i - 1;
-    }
-}

@@ -1,8 +1,0 @@
-/*
- * PROGRAMA TESTE *
-*/
-
-int main(void) {
-	int a;
-	a = (2 * 3) + 1;
-}
