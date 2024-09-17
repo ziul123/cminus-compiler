@@ -3,3 +3,4 @@
 *.d
 cmc
 build
+.vscode/
