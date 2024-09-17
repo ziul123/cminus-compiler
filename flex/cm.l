@@ -43,6 +43,8 @@ while		{return WHILE;}
 proc		{return PROC;}
 return	{return RETURN;}
 ,				{return COMMA;}
+read 		{return READ;}
+write 		{return WRITE;}
 
 {id}		{
 					yylval.id = strdup(yytext);

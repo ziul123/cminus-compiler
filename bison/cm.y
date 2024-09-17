@@ -75,6 +75,8 @@ char *new_label();
 			COMMA
 			INT
 			VOID
+			READ
+			WRITE
 
 
 %printer { fprintf(yyo, "%d", $$); } <num>;
@@ -138,6 +140,8 @@ cmd:
     | while_cmd {;}
     | ret_cmd {;}
 		| chamada_funcao
+		| read_cmd {;}
+		| write_cmd {;}
     ;
 
 bloco_cmd:
@@ -352,6 +356,14 @@ chamada_funcao:
 		}}
     ;
 
+
+/* Comandos de entrada e saída */
+
+read_cmd:
+	READ var {;}
+
+write_cmd:
+	WRITE expr_simples {;}
 
 %%
 void print_st_cell(st_cell symbol) {
