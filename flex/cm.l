@@ -40,6 +40,7 @@ void		{return VOID;}
 if			{return IF;}
 else		{return ELSE;}
 while		{return WHILE;}
+proc		{return PROC;}
 return	{return RETURN;}
 ,				{return COMMA;}
 

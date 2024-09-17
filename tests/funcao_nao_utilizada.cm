@@ -1,9 +1,9 @@
 int x;
 int z;
 
-int func(void) {}
+proc func {}
 
-int main(void) {
+proc main {
 	x = 2;
 	z = 4;
 }

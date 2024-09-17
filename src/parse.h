@@ -75,10 +75,11 @@ typedef struct strpair {char* str1; char* str2;} strpair;
     IF = 278,
     ELSE = 279,
     WHILE = 280,
-    RETURN = 281,
-    COMMA = 282,
-    INT = 283,
-    VOID = 284
+    PROC = 281,
+    RETURN = 282,
+    COMMA = 283,
+    INT = 284,
+    VOID = 285
   };
 #endif
 
@@ -95,7 +96,7 @@ union YYSTYPE
 	type_t type_var;
 	strpair pair;
 
-#line 99 "src/parse.h" /* yacc.c:1909  */
+#line 100 "src/parse.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;

@@ -1,7 +1,7 @@
-int main(int arg) {;}
+proc main {;}
 
-void test(void) {;}
+proc test {;}
 
-int sum(int array[]) {;}
+proc sum {;}
 
-void append(int array[], int len, int data) {;}
+proc append {;}

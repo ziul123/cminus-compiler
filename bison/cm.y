@@ -70,6 +70,7 @@ char *new_label();
 			IF
 			ELSE
 			WHILE
+			PROC
 			RETURN
 			COMMA
 			INT
@@ -107,12 +108,15 @@ declaracao_var:
 		;
 
 declaracao_fun:
-		tipo ID {
+		PROC ID {
 			ft_cell new_fun = (ft_cell){.name=$2};
-			fun_table[fun_counter] = new_fun;
-		}
-		LPAREN parametros RPAREN {
-			fun_counter++;
+			fun_table[fun_counter++] = new_fun;
+			size_t label_len = strlen($2) + 2; //espaco para : e \0
+			char *func_label = malloc(label_len); 
+			strcpy(func_label, $2);
+			func_label[label_len-1] = ':';
+      tac_cell func_enter = { .line_addr = func_label, .inst=NOP};
+      tac_table[tac_counter++] = func_enter;
 		}
 		bloco_cmd {;}
     ;
@@ -121,29 +125,6 @@ tipo:
     VOID 	{$$ = VOID_T;}
     | INT {$$ = INT_T;}
     ;
-
-parametros:
-    lista_parametros {;}
-    | VOID {;}
-    ;
-
-lista_parametros:
-    param {;}
-    | lista_parametros COMMA param {;}
-    ;
-
-param:
-		tipo ID LBRACK RBRACK {
-			insert_sym(symbol_table, $2, INT_ARR_T, 0);
-		}
-    | tipo ID {
-			insert_sym(symbol_table, $2, INT_T, 0);
-		}
-    ;
-
-declaracoes_locais:
-		/* empty */
-		| declaracoes_locais declaracao_var {;}
 
 lista_cmds:
     /* empty */
@@ -156,10 +137,11 @@ cmd:
     | if_cmd {;}
     | while_cmd {;}
     | ret_cmd {;}
+		| chamada_funcao
     ;
 
 bloco_cmd:
-    LCURLY declaracoes_locais lista_cmds RCURLY {;}
+    LCURLY lista_cmds RCURLY {;}
     ;
 
 expr_cmd:
@@ -242,7 +224,6 @@ fator:
 		LPAREN expr RPAREN	{$$ = $2;}
 		| var	{$$ = (tac_address){.name = $1, .addr_type = NAME};}
 		| NUM	{$$ = (tac_address){.constant = $1, .addr_type = CONST};}
-		| chamada_funcao {;}
 		;
 
 var: ID {/* checar se ID foi declarada */
@@ -356,7 +337,7 @@ ret_cmd:
 /* Chamadas de função e argumentos */
 
 chamada_funcao:
-    ID LPAREN argumentos RPAREN {
+    ID LPAREN RPAREN {
 			int flag = 0;
 			for (int i=0; i<fun_counter; i++) {
 				if (fun_table[i].name == $1) {
@@ -371,15 +352,6 @@ chamada_funcao:
 		}}
     ;
 
-argumentos:
-		/* empty */
-		| lista_argumentos {;}
-		;
-
-lista_argumentos:
-		expr {;}
-		| lista_argumentos COMMA expr {;}
-		;
 
 %%
 void print_st_cell(st_cell symbol) {
@@ -390,7 +362,7 @@ void print_st_cell(st_cell symbol) {
 }
 
 void print_ft_cell(ft_cell fun) {
-	printf("%s\n", fun.name);
+	printf("%s (usado: %s)\n", fun.name, fun.usado?"sim":"nao");
 }
 
 void print_tac_address(FILE *stream, tac_address addr) {
@@ -456,6 +428,7 @@ int main(int argc, char **argv) {
 	for (int i=0; i<fun_counter; i++) {
 		if (strcmp(fun_table[i].name, "main") == 0)
 			fun_table[i].usado = 1;
+		//print_ft_cell(fun_table[i]);
 		if (!fun_table[i].usado)
 			printf("WARNING: Funcao %s declarada mas nao utilizada!\n", fun_table[i].name);
 	}
