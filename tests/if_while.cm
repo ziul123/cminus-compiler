@@ -1,0 +1,26 @@
+int input_0;
+int input_1;
+int rem;
+int mod;
+
+proc main {
+
+    input_0 = 2;
+    input_1 = 5;
+    rem = 0;
+    mod = 0;
+
+    if(i <= j) {
+
+        rem = input_1;
+        mod = input_0;
+    }else{
+
+        rem = input_0;
+        mod = input_1;
+    }
+
+    while (mod <= rem)
+        rem = rem - mod;
+
+}
