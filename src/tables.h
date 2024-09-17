@@ -1,5 +1,6 @@
 #pragma once
 #include <stdint.h>
+#include <string.h>
 
 #define FOREACH_INSTS(inst) \
 	/* Operacoes binarias */ \
@@ -32,21 +33,38 @@
 	/* Operacoes de array */ \
 	inst(ARR_GET) \
 	inst(ARR_SET) \
- 	/* No Operation */ \
- 	inst(NOP) \
+	/* No Operation */ \
+	inst(NOP)
 
 #define GENERATE_ENUM(x) x, 
 #define GENERATE_LUT(x) [x] = #x, 
 
 typedef struct st_cell st_cell;
+typedef struct ft_cell ft_cell;
 typedef struct tac_address tac_address;
 typedef struct tac_cell tac_cell;
+
+typedef enum TYPE {VOID_T, INT_T, INT_ARR_T} type_t;
+static const char * const str_type[] = {
+	[VOID_T] = "VOID_T",
+	[INT_T] = "INT_T",
+	[INT_ARR_T] = "INT_ARR_T"
+};
 
 struct st_cell {
 	// Celula da tabela de simbolos
 	const char *name;
-	int tac_addr;
 	uint32_t mem_addr;
+	type_t sym_type;
+	int len;	// Caso for INT_ARR
+	int usado;
+	st_cell *next;
+};
+
+struct ft_cell {
+	// Celula da tabela de funcoes
+	const char *name;
+	int usado;
 };
 
 enum INST {
@@ -73,11 +91,18 @@ struct tac_cell {
 	enum INST inst;
 	tac_address source1;
 	tac_address source2;
-    char* line_addr; 	// Endereco da linha
+	char* line_addr; 	// Endereco da linha
 	char* jmp_addr;		// Endereco do pulo
 };
 
+void insert_sym(st_cell **sym_table, const char *name, type_t sym_type, int len);
+
+st_cell *find_sym(st_cell **sym_table, const char *name);
+
+st_cell *pop_sym(st_cell **sym_table);
+
+void destroy_st(st_cell **sym_table);
+
 tac_address make_tmp(int tac_cell);
 
-tac_cell *make_tac_cell(tac_address s1, tac_address s2, enum INST inst);
 

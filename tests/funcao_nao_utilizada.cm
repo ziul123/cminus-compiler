@@ -1,0 +1,9 @@
+int x;
+int z;
+
+proc func {}
+
+proc main {
+	x = 2;
+	z = 4;
+}

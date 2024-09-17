@@ -43,8 +43,9 @@ extern int yydebug;
 #line 7 "bison/cm.y" /* yacc.c:1909  */
 
 #include "tables.h"
+typedef struct strpair {char* str1; char* str2;} strpair;
 
-#line 48 "src/parse.h" /* yacc.c:1909  */
+#line 49 "src/parse.h" /* yacc.c:1909  */
 
 /* Token type.  */
 #ifndef YYTOKENTYPE
@@ -71,13 +72,14 @@ extern int yydebug;
     LT_EQ = 275,
     EQ_EQ = 276,
     NEQ = 277,
-    INT = 278,
-    VOID = 279,
-    IF = 280,
-    ELSE = 281,
-    WHILE = 282,
-    RETURN = 283,
-    COMMA = 284
+    IF = 278,
+    ELSE = 279,
+    WHILE = 280,
+    PROC = 281,
+    RETURN = 282,
+    COMMA = 283,
+    INT = 284,
+    VOID = 285
   };
 #endif
 
@@ -86,13 +88,15 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 11 "bison/cm.y" /* yacc.c:1909  */
+#line 12 "bison/cm.y" /* yacc.c:1909  */
 
 	int num;
 	char *id;
 	tac_address addr;
+	type_t type_var;
+	strpair pair;
 
-#line 96 "src/parse.h" /* yacc.c:1909  */
+#line 100 "src/parse.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;

@@ -20,6 +20,8 @@ lparen \(
 rparen \)
 lcurly \{
 rcurly \}
+lbrack \[
+rbrack \]
 semicolon ;
 gt \>
 lt \<
@@ -38,8 +40,11 @@ void		{return VOID;}
 if			{return IF;}
 else		{return ELSE;}
 while		{return WHILE;}
+proc		{return PROC;}
 return	{return RETURN;}
 ,				{return COMMA;}
+read 		{return READ;}
+write 		{return WRITE;}
 
 {id}		{
 					yylval.id = strdup(yytext);
@@ -64,6 +69,8 @@ return	{return RETURN;}
 {rparen}		{return RPAREN;}
 {lcurly}		{return LCURLY;}
 {rcurly}		{return RCURLY;}
+{lbrack}		{return LBRACK;}
+{rbrack}		{return RBRACK;}
 {semicolon}	{return SEMICOLON;}
 %%
 

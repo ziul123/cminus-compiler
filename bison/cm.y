@@ -13,6 +13,7 @@ typedef struct strpair {char* str1; char* str2;} strpair;
 	int num;
 	char *id;
 	tac_address addr;
+	type_t type_var;
 	strpair pair;
 }
 
@@ -21,9 +22,17 @@ int yylex(void);
 int yyerror(char* s);
 extern int yylineno;
 extern FILE *yyin;
+
 void print_tac_address(FILE *stream, tac_address addr);
-st_cell symbol_table[4096];
+void print_ft_cell(ft_cell fun);
+void print_st_cell(st_cell symbol);
+
+st_cell **symbol_table;
+ft_cell fun_table[4096];
 tac_cell tac_table[4096];
+
+int st_counter = 0;
+int fun_counter = 0;
 int tac_counter = 0;
 int label_counter = 0;
 char *new_label();
@@ -31,7 +40,7 @@ char *new_label();
 
 %token <num> NUM
 %token <id> ID
-%nterm <enum TYPE> tipo
+%nterm <type_var> tipo
 %nterm <addr>
 			fator
 			termo
@@ -61,20 +70,21 @@ char *new_label();
 			IF
 			ELSE
 			WHILE
+			PROC
 			RETURN
 			COMMA
 			INT
 			VOID
+			READ
+			WRITE
 
 
 %printer { fprintf(yyo, "%d", $$); } <num>;
 %printer { fprintf(yyo, "%s", $$); } <id>;
 %printer { print_tac_address(yyo, $$); } <addr>;
-
+%printer { fprintf(yyo, "%s", str_type[$$]); } <type_var>
 
 %%
-/* Regras definindo a GLC e acoes correspondentes */
-/* neste nosso exemplo quase todas as acoes estao vazias */
 
 programa:
     lista_declaracoes {printf("Programa sintaticamente correto\n");}
@@ -91,37 +101,32 @@ declaracao:
 		;
 
 declaracao_var:
-		tipo ID SEMICOLON {;}
-		| tipo ID LBRACK NUM RBRACK SEMICOLON {;}
+		tipo ID SEMICOLON {
+			insert_sym(symbol_table, $2, INT_T, 0);
+		}
+		| tipo ID LBRACK NUM RBRACK SEMICOLON {
+			insert_sym(symbol_table, $2, INT_ARR_T, $4);
+		}
 		;
 
 declaracao_fun:
-		tipo ID LPAREN parametros RPAREN bloco_cmd {;}
+		PROC ID {
+			ft_cell new_fun = (ft_cell){.name=$2};
+			fun_table[fun_counter++] = new_fun;
+			size_t label_len = strlen($2) + 2; //espaco para : e \0
+			char *func_label = malloc(label_len); 
+			strcpy(func_label, $2);
+			func_label[label_len-1] = ':';
+      tac_cell func_enter = { .line_addr = func_label, .inst=NOP};
+      tac_table[tac_counter++] = func_enter;
+		}
+		bloco_cmd {;}
     ;
 
 tipo:
-    VOID 	{;}
-    | INT {;}
+    VOID 	{$$ = VOID_T;}
+    | INT {$$ = INT_T;}
     ;
-
-parametros:
-    lista_parametros {;}
-    | VOID {;}
-    ;
-
-lista_parametros:
-    param {;}
-    | lista_parametros COMMA param {;}
-    ;
-
-param:
-    tipo ID {;}
-		| tipo ID LBRACK RBRACK {;}
-    ;
-
-declaracoes_locais:
-		/* empty */
-		| declaracoes_locais declaracao_var
 
 lista_cmds:
     /* empty */
@@ -134,10 +139,13 @@ cmd:
     | if_cmd {;}
     | while_cmd {;}
     | ret_cmd {;}
+		| chamada_funcao
+		| read_cmd {;}
+		| write_cmd {;}
     ;
 
 bloco_cmd:
-    LCURLY declaracoes_locais lista_cmds RCURLY {;}
+    LCURLY lista_cmds RCURLY {;}
     ;
 
 expr_cmd:
@@ -165,7 +173,6 @@ expr_simples:
 			tac_cell tmp = {.source1=$1, .source2=$3, .inst=SLT};
 			tac_table[tac_counter] = tmp;
 			$$ = make_tmp(tac_counter++);}
-
 		| expr_ad GT_EQ expr_ad	{
 			tac_cell tmp = {.source1=$1, .source2=$3, .inst=SGTE};
 			tac_table[tac_counter] = tmp;
@@ -221,16 +228,44 @@ fator:
 		LPAREN expr RPAREN	{$$ = $2;}
 		| var	{$$ = (tac_address){.name = $1, .addr_type = NAME};}
 		| NUM	{$$ = (tac_address){.constant = $1, .addr_type = CONST};}
-		| chamada_funcao {;}
 		;
 
-var: ID {;}
-	 	| ID LBRACK expr RBRACK {;}
+var: ID {/* checar se ID foi declarada */
+	 		int found = 0;
+			st_cell *symbol = find_sym(symbol_table, $1);
+			if (symbol) {
+				found = 1;
+				symbol->usado = 1;
+			}
+
+			if(!found) {
+				printf("%d: ERRO: Variavel %s nao foi declarada!\n", yylineno, $1);
+				exit(1);
+			}
+			}
+
+	 	| ID LBRACK expr RBRACK {
+	 		int found = 0;
+	 		for (int i=st_counter; i>=0; i--) {
+				st_cell *symbol = find_sym(symbol_table, $1);
+				if (symbol) {
+					found = 1;
+					symbol->usado = 1;
+					break;
+				}
+			}
+
+			if(!found) {
+				printf("%d: ERRO: Variavel %s nao foi declarada!\n", yylineno, $1);
+				exit(1);
+			}
+			}
+			;
 
 /* Comandos de controle de fluxo */
 
 if_cmd:
-    IF LPAREN expr RPAREN{
+    IF LPAREN expr RPAREN {
 
       char* exit_label = new_label();
 
@@ -240,12 +275,12 @@ if_cmd:
       $<id>$ = exit_label;
      } bloco_cmd {
 
-      tac_cell opr_exit = { .line_addr = $<idr>5, .inst=NOP};
+      tac_cell opr_exit = { .line_addr = $<id>5, .inst=NOP};
       tac_table[tac_counter++] = opr_exit;
 
     }
 
-    | IF LPAREN expr RPAREN{
+    | IF LPAREN expr RPAREN {
 
       char* exit_label = new_label();
       char* else_label = new_label();
@@ -256,9 +291,9 @@ if_cmd:
 
       $<pair>$ = (strpair){.str1 = exit_label, .str2 = else_label};
 
-     }bloco_cmd {
+     } bloco_cmd {
 
-         tac_cell jump_exit = { .jump_addr = $<pair>5.str1, .inst=JMP};
+         tac_cell jump_exit = { .jmp_addr = ($<pair>5.str1), .inst=JMP};
          tac_table[tac_counter++] = jump_exit;
 
          tac_cell label_else = { .line_addr = $<pair>5.str2, .inst=NOP};
@@ -270,6 +305,7 @@ if_cmd:
         tac_cell opr_exit = { .line_addr = $<pair>5.str1, .inst=NOP};
         tac_table[tac_counter++] = opr_exit;
      }
+		 ;
 
 
 
@@ -291,38 +327,55 @@ while_cmd:
         tac_cell tmp3 = { .line_addr = $<pair>5.str2, .inst=NOP};
         tac_table[tac_counter++] = tmp3;
     }
-
+		;
 
 
 ret_cmd:
     RETURN SEMICOLON {
 
-        tac_cell opr_ret = { .inst=RET};
-        tac_table[tac_counter++] = opt_ret;
+        tac_cell op_ret = { .inst=RET};
+        tac_table[tac_counter++] = op_ret;
     }
-    | RETURN expr SEMICOLON {
-
-        tac_cell opr_ret_src = {.source1=$2, .inst=RET};
-        tac_table[tac_counter++] = opt_ret_src;
-    }
+		;
 
 /* Chamadas de função e argumentos */
 
 chamada_funcao:
-    ID LPAREN argumentos RPAREN {;}
+    ID LPAREN RPAREN {
+			int flag = 0;
+			for (int i=0; i<fun_counter; i++) {
+				if (fun_table[i].name == $1) {
+					flag = 1;
+					fun_table[i].usado = 1;
+					break;
+				}
+			}
+			if (!flag) {
+				printf("%d: ERRO: Funcao %s nao foi declarada!\n", yylineno, $1);
+			exit(1);
+		}}
     ;
 
-argumentos:
-		/* empty */
-		| lista_argumentos {;}
-		;
 
-lista_argumentos:
-		expr {;}
-		| lista_argumentos COMMA expr {;}
-		;
+/* Comandos de entrada e saída */
+
+read_cmd:
+	READ var {;}
+
+write_cmd:
+	WRITE expr_simples {;}
 
 %%
+void print_st_cell(st_cell symbol) {
+	printf("%s: %s", symbol.name, str_type[symbol.sym_type]);
+	if (symbol.sym_type == INT_ARR_T)
+		printf("[%d]", symbol.len);
+	printf(" (usado: %s)\n", symbol.usado?"sim":"nao");
+}
+
+void print_ft_cell(ft_cell fun) {
+	printf("%s (usado: %s)\n", fun.name, fun.usado?"sim":"nao");
+}
 
 void print_tac_address(FILE *stream, tac_address addr) {
 	switch (addr.addr_type) {
@@ -369,13 +422,33 @@ int main(int argc, char **argv) {
 			return 1;
 		}
 	}
-	yydebug = 1;
+	symbol_table = malloc(sizeof(st_cell*));
+
+//	yydebug = 1;
 	yyparse();
 
-	// botamos para ficar padronizado com o tamanho do tac_counter
+	st_cell *current = *symbol_table;
+	if (current) {
+		while (current) {
+			//print_st_cell(*current);
+			if (!current->usado)
+				printf("WARNING: Variavel %s declarada mas nao utilizada!\n", current->name);
+			current = current->next;
+		}
+	}
+
+	for (int i=0; i<fun_counter; i++) {
+		if (strcmp(fun_table[i].name, "main") == 0)
+			fun_table[i].usado = 1;
+		//print_ft_cell(fun_table[i]);
+		if (!fun_table[i].usado)
+			printf("WARNING: Funcao %s declarada mas nao utilizada!\n", fun_table[i].name);
+	}
+
 	for (int i = 0; i < tac_counter; i++) {
 		print_tac_cell(tac_table[i], i);
 	}
+
 }
 int yyerror (char *s) /* Called by yyparse on error */
 {
