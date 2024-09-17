@@ -1,5 +1,5 @@
 int x;
+int y;
 
-int main(void) {
-	int y;
+proc main {
 }
