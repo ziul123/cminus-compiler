@@ -29,11 +29,14 @@
 	/* Operacoes de chamada de funcao */ \
 	inst(CALL) \
 	inst(RET) \
-	/* Operacoes de array */ \
-	inst(ARR_GET) \
-	inst(ARR_SET) \
+	/* Operacoes de ponteiro */ \
+	inst(PTR_GET) \
+	inst(PTR_SET) \
 	/* No Operation */ \
-	inst(NOP)
+	inst(NOP) \
+	/* Operacoes de entrada e saida */ \
+	inst(READ_INST) \
+	inst(WRITE_INST) \
 
 #define GENERATE_ENUM(x) x, 
 #define GENERATE_LUT(x) [x] = #x, 
@@ -83,6 +86,12 @@ struct tac_address {
 	};
 	enum ADDR_TYPE {TEMP, CONST, NAME} addr_type;
 };
+
+typedef struct varinfo {
+	char *id;
+	type_t var_type;
+	tac_address index_addr;	//para var do tipo INT_ARR_T
+} varinfo;
 
 
 struct tac_cell {

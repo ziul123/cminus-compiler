@@ -97,8 +97,9 @@ union YYSTYPE
 	tac_address addr;
 	type_t type_var;
 	strpair pair;
+	varinfo vinfo;
 
-#line 102 "src/parse.h" /* yacc.c:1909  */
+#line 103 "src/parse.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;

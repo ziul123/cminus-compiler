@@ -1,0 +1,6 @@
+int x[10];
+int y;
+
+proc main {
+	y = x[3];
+}
