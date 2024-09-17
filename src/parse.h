@@ -91,8 +91,9 @@ union YYSTYPE
 	int num;
 	char *id;
 	tac_address addr;
+	type_t type_var;
 
-#line 96 "src/parse.h" /* yacc.c:1909  */
+#line 97 "src/parse.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;

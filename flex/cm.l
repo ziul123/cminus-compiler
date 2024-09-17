@@ -20,6 +20,8 @@ lparen \(
 rparen \)
 lcurly \{
 rcurly \}
+lbrack \[
+rbrack \]
 semicolon ;
 gt \>
 lt \<
@@ -64,6 +66,8 @@ return	{return RETURN;}
 {rparen}		{return RPAREN;}
 {lcurly}		{return LCURLY;}
 {rcurly}		{return RCURLY;}
+{lbrack}		{return LBRACK;}
+{rbrack}		{return RBRACK;}
 {semicolon}	{return SEMICOLON;}
 %%
 

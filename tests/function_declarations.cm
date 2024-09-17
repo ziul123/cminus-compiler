@@ -1,0 +1,7 @@
+int main(int arg) {;}
+
+void test(void) {;}
+
+int sum(int array[]) {;}
+
+void append(int array[], int len, int data) {;}
