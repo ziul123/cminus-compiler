@@ -89,12 +89,14 @@ struct tac_address {
 	enum ADDR_TYPE {TEMP, CONST, NAME} addr_type;
 };
 
+
 struct tac_cell {
 	// Celula da tabela do codigo de 3 enderecos
 	enum INST inst;
 	tac_address source1;
 	tac_address source2;
-	int jmp_addr;		// Endereco para pulos
+	char* line_addr; 	// Endereco da linha
+	char* jmp_addr;		// Endereco do pulo
 };
 
 void add_param_t(ft_cell *fun, type_t p_type);

@@ -6,6 +6,7 @@
 
 %code requires {
 #include "tables.h"
+typedef struct strpair {char* str1; char* str2;} strpair;
 }
 
 %union {
@@ -13,6 +14,7 @@
 	char *id;
 	tac_address addr;
 	type_t type_var;
+	strpair pair;
 }
 
 %code {
@@ -35,7 +37,7 @@ int st_counter = 0;
 int fun_counter = 0;
 int tac_counter = 0;
 int label_counter = 0;
-//int fun_scope = 0;
+char *new_label();
 }
 
 %token <num> NUM
@@ -304,18 +306,81 @@ var: ID {/* checar se ID foi declarada */
 /* Comandos de controle de fluxo */
 
 if_cmd:
-    IF LPAREN expr RPAREN bloco_cmd {;}
-    | IF LPAREN expr RPAREN bloco_cmd ELSE bloco_cmd {;}
-    ;
+    IF LPAREN expr RPAREN{
+
+      char* exit_label = new_label();
+
+      tac_cell jmp_exit = {.jmp_addr=exit_label, .source1=$3, .inst=JF};
+      tac_table[tac_counter++] = jmp_exit;
+
+      $<id>$ = exit_label;
+     } bloco_cmd {
+
+      tac_cell opr_exit = { .line_addr = $<idr>5, .inst=NOP};
+      tac_table[tac_counter++] = opr_exit;
+
+    }
+
+    | IF LPAREN expr RPAREN{
+
+      char* exit_label = new_label();
+      char* else_label = new_label();
+
+
+      tac_cell jmp_else = {.jmp_addr=else_label, .source1=$3, .inst=JF};
+      tac_table[tac_counter++] = jmp_else;
+
+      $<pair>$ = (strpair){.str1 = exit_label, .str2 = else_label};
+
+     }bloco_cmd {
+
+         tac_cell jump_exit = { .jump_addr = $<pair>5.str1, .inst=JMP};
+         tac_table[tac_counter++] = jump_exit;
+
+         tac_cell label_else = { .line_addr = $<pair>5.str2, .inst=NOP};
+         tac_table[tac_counter++] = label_else;
+
+     }
+     ELSE bloco_cmd {
+
+        tac_cell opr_exit = { .line_addr = $<pair>5.str1, .inst=NOP};
+        tac_table[tac_counter++] = opr_exit;
+     }
+
+
 
 while_cmd:
-    WHILE LPAREN expr RPAREN cmd {;}
-    ;
+    WHILE LPAREN expr RPAREN{
+
+        char* top_label = new_label();
+        char* botton_label = new_label();
+
+        tac_cell tmp1 = {.jmp_addr=botton_label, .line_addr = top_label, .source1=$3, .inst=JF};
+        tac_table[tac_counter++] = tmp1;
+
+        $<pair>$ = (strpair){.str1 = top_label, .str2 = botton_label};
+    } cmd {
+
+        tac_cell tmp2 = {.jmp_addr=$<pair>5.str1, .inst=JMP};
+        tac_table[tac_counter++] = tmp2;
+
+        tac_cell tmp3 = { .line_addr = $<pair>5.str2, .inst=NOP};
+        tac_table[tac_counter++] = tmp3;
+    }
+
+
 
 ret_cmd:
-    RETURN SEMICOLON {;}
-    | RETURN expr SEMICOLON {;}
-    ;
+    RETURN SEMICOLON {
+
+        tac_cell opr_ret = { .inst=RET};
+        tac_table[tac_counter++] = opt_ret;
+    }
+    | RETURN expr SEMICOLON {
+
+        tac_cell opr_ret_src = {.source1=$2, .inst=RET};
+        tac_table[tac_counter++] = opt_ret_src;
+    }
 
 /* Chamadas de função e argumentos */
 
@@ -382,12 +447,25 @@ void print_tac_address(FILE *stream, tac_address addr) {
 
 void print_tac_cell(tac_cell cell, int lineno) {
 	printf("%d\t", lineno);
-	printf(" %s", str_inst[cell.inst]);
+	if (cell.line_addr)
+		printf("%s: ", cell.line_addr);
+	printf(" %s ", str_inst[cell.inst]);
 	print_tac_address(stdout, cell.source1);
 	printf(" ");
 	print_tac_address(stdout, cell.source2);
+	if (cell.inst >= JMP && cell.inst <= BLE)
+		printf(" %s", cell.jmp_addr);
 	printf("\n");
 }
+
+char *new_label(){
+    char *l = malloc(10);
+    if(!l)
+        printf("Erro alocando label \n");
+    sprintf(l, "L%d", label_counter++);
+    return l;
+}
+
 
 int main(int argc, char **argv) {
 	if (argc == 2) {
