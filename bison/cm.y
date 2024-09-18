@@ -111,7 +111,7 @@ declaracao_fun:
 			size_t label_len = strlen($2) + 2; //espaco para : e \0
 			char *func_label = malloc(label_len); 
 			strcpy(func_label, $2);
-			func_label[label_len-1] = ':';
+			func_label[label_len-2] = ':';
       tac_cell func_enter = { .line_addr = func_label, .inst=NOP};
       tac_table[tac_counter++] = func_enter;
 		}

@@ -1,0 +1,8 @@
+int x;
+int y;
+int z;
+
+proc main {
+	x = x + (y + z);
+	z = z + z;
+}

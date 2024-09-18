@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "tables.h"
+#include "codegen.h"
 
 extern FILE *yyin;
 extern void yyparse(void);
@@ -66,26 +67,29 @@ int main(int argc, char **argv) {
 //	yydebug = 1;
 	yyparse();
 
-	st_cell *current = *symbol_table;
-	if (current) {
-		while (current) {
-			//print_st_cell(*current);
-			if (!current->usado)
-				printf("WARNING: Variavel %s declarada mas nao utilizada!\n", current->name);
-			current = current->next;
-		}
-	}
-
-	for (int i=0; i<fun_counter; i++) {
-		if (strcmp(fun_table[i].name, "main") == 0)
-			fun_table[i].usado = 1;
-		//print_ft_cell(fun_table[i]);
-		if (!fun_table[i].usado)
-			printf("WARNING: Funcao %s declarada mas nao utilizada!\n", fun_table[i].name);
-	}
-
+//	st_cell *current = *symbol_table;
+//	if (current) {
+//		while (current) {
+//			//print_st_cell(*current);
+//			if (!current->usado)
+//				printf("WARNING: Variavel %s declarada mas nao utilizada!\n", current->name);
+//			current = current->next;
+//		}
+//	}
+//
+//	for (int i=0; i<fun_counter; i++) {
+//		if (strcmp(fun_table[i].name, "main") == 0)
+//			fun_table[i].usado = 1;
+//		//print_ft_cell(fun_table[i]);
+//		if (!fun_table[i].usado)
+//			printf("WARNING: Funcao %s declarada mas nao utilizada!\n", fun_table[i].name);
+//	}
+//
 	for (int i = 0; i < tac_counter; i++) {
 		print_tac_cell(tac_table[i], i);
 	}
-
+	
+	for (int i = 0; i < tac_counter; i++) {
+		generate_instruction(tac_table[i], symbol_table);
+	}
 }
