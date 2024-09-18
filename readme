@@ -4,3 +4,5 @@ Compilador de C- para RISC-V
 Uso:
 	* `make`
 	* `make cmc`
+
+./cmc tests/<nome-do-test>
