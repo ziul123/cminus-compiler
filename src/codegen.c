@@ -23,7 +23,9 @@ int tmp_reg = 0;
 int sav_reg = 0;
 
 int last_tmp() {
-	return (tmp_reg - 1) % NUM_TMP;
+	int aux = tmp_reg - 1;
+	aux = (aux<0?-aux:aux);
+	return (aux % NUM_TMP) + 1;
 }
 
 char *last_tmp_str() {
@@ -35,7 +37,7 @@ char *last_tmp_str() {
 int get_tmp() {
 	int reg = tmp_reg;
 	tmp_reg = (tmp_reg + 1) % NUM_TMP;
-	return reg;
+	return reg + 1;
 }
 
 char *get_tmp_str() {
@@ -57,19 +59,19 @@ int get_reg_num(tac_address addr, type_t var_type) {
 				if (!sav_regs[i])
 					break;
 				if (strcmp(sav_regs[i], addr.name) == 0) {
-					return i;
+					return i + 1;
 				}
 			}
 			sav_regs[sav_reg] = addr.name;
+			reg = sav_reg + 1;
 			switch (var_type) {
 				case INT_T:
-					printf("la s%1$d, %2$s\nlw, s%1$d, 0(s%1$d)\n", sav_reg, addr.name);
+					printf("la s%1$d, %2$s\nlw, s%1$d, 0(s%1$d)\n", reg, addr.name);
 					break;
 				case INT_ARR_T:
-					printf("la s%d, %s", sav_reg, addr.name);
+					printf("la s%d, %s", reg, addr.name);
 					break;
 			}
-			reg = sav_reg;
 			sav_reg = (sav_reg + 1) % NUM_SAV;
 			break;
 		case CONST:
@@ -105,6 +107,7 @@ void generate_instruction(tac_cell tac_line, st_cell **symbol_table) {
 	type_t s1t = VOID_T;
 	type_t s2t = VOID_T;
 	int imm = 0;
+	int both_imm = 0;
 
 	if (s1.addr_type == NAME) {
 		st_cell *symbol = find_sym(symbol_table, s1.name);
@@ -119,8 +122,10 @@ void generate_instruction(tac_cell tac_line, st_cell **symbol_table) {
 	//caso as duas fontes forem constante, uma precisa ser
 	//carregada em registrador previamente
 	if ((s1.addr_type == CONST) && (s2.addr_type == CONST)) { 
-		printf("li, t%d, %d\n", get_tmp(), s1.constant);
+		printf("li t%d, %d\n", get_tmp(), s1.constant);
+		rs1 = last_tmp_str();
 		imm = 1;
+		both_imm = 1;
 	} else if ((s1.addr_type == CONST) || (s2.addr_type == CONST)) {
 		imm = 1;
 	}
@@ -147,10 +152,26 @@ void generate_instruction(tac_cell tac_line, st_cell **symbol_table) {
 			rd = get_tmp_str();
 			if (line_addr)
 				printf("%s ", line_addr);
-			printf("%s, %s, %s, %s\n", instr, rd, rs1, rs2); 
+			printf("%s %s, %s, %s\n", instr, rd, rs1, rs2); 
 			break;
 
 		tipo_i:
+			if (both_imm) {
+				rs1 = last_tmp_str();
+				rs2 = get_reg_str(s2, s2t);
+			} else  {
+				rs1 = get_reg_str(s1, s1t);
+				rs2 = get_reg_str(s2, s2t);
+			}
+			if (s1.addr_type == CONST && !both_imm) {
+				char *aux = rs1;
+				rs1 = rs2;
+				rs2 = aux;
+			}
+			rd = get_tmp_str();
+			if (line_addr)
+				printf("%s ", line_addr);
+			printf("%s %s, %s, %s\n", instr, rd, rs1, rs2); 
 			break;
 	}
 }

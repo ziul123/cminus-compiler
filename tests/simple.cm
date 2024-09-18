@@ -4,5 +4,6 @@ int z;
 
 proc main {
 	x = x + (y + z);
-	z = z + z;
+	z = 1 + 2;
+	y = 1 + z;
 }
