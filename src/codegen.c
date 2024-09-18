@@ -14,8 +14,8 @@ const char *write_proc = \
 	"ecall\n"
 	"ret\n";
 
-char data[0xFFFF];
-char text[0xFFFF] = "call main\nli a7, 10\necall\n";
+char data[0xFFFF] = ".data\n";
+char text[0xFFFF] = ".text\ncall main\nli a7, 10\necall\n";
 size_t text_counter = 26; //contador de caracteres em text
 
 const char *sav_regs[NUM_SAV];
@@ -157,13 +157,13 @@ void generate_instruction(tac_cell tac_line, st_cell **symbol_table) {
 
 void allocate_variables(st_cell **symbol_table) {
 	/* Popula .data com variáveis */
-	st_cell *ptr = *symbol_table;
+	st_cell *current = *symbol_table;
 	char space_num[5];
 	
-	while(!ptr->next) {
-		st_cell *current = ptr->next;
+	while(current) {
 		type_t type = current->sym_type;
 		if(type == VOID_T) {
+			current = current->next;
 			continue;
 		}
 		if(type == INT_T) {
@@ -175,9 +175,10 @@ void allocate_variables(st_cell **symbol_table) {
 		}
 
 		char line[40];
-		char id[20] = current->name;
+		const char *id = current->name;
 		sprintf(line, "%s: .space %s\n", id, space_num); // line = id + : + .space: + space_num
 		
 		strcat(data, line);
+		current = current->next;
 	}
 }

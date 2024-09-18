@@ -11,7 +11,7 @@ extern tac_cell tac_table[4096];
 extern int fun_counter;
 extern int tac_counter;
 extern int label_counter;
-
+extern char data[0xFFFF];
 
 void print_st_cell(st_cell symbol) {
 	printf("%s: %s", symbol.name, str_type[symbol.sym_type]);
@@ -88,6 +88,9 @@ int main(int argc, char **argv) {
 	for (int i = 0; i < tac_counter; i++) {
 		print_tac_cell(tac_table[i], i);
 	}
+
+	allocate_variables(symbol_table);
+	printf(data);
 	
 	for (int i = 0; i < tac_counter; i++) {
 		generate_instruction(tac_table[i], symbol_table);

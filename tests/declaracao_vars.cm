@@ -1,0 +1,6 @@
+int x;
+int media;
+int a[10];
+int array[5];
+
+proc main {}
