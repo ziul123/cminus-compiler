@@ -191,6 +191,7 @@ expr_simples:
 			tac_cell tmp = {.source1=$1, .source2=$3, .inst=SLT};
 			tac_table[tac_counter] = tmp;
 			$$ = make_tmp(tac_counter++);}
+
 		| expr_ad GT_EQ expr_ad	{
 			tac_cell tmp = {.source1=$1, .source2=$3, .inst=SGTE};
 			tac_table[tac_counter] = tmp;
