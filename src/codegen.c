@@ -140,6 +140,15 @@ void generate_instruction(tac_cell tac_line, st_cell **symbol_table) {
 				goto tipo_r;
 			}
 
+		case SUB:
+			if (imm) {
+				strcpy(instr, "subi");
+				goto tipo_i;
+			} else {
+				strcpy(instr, "sub");
+				goto tipo_r;
+			}
+
 		case NOP:
 			if (line_addr)
 				printf("%s ", line_addr);
