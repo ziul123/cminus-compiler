@@ -1,26 +1,27 @@
-int input_0;
-int input_1;
+int input0;
+int input1;
 int rem;
 int mod;
 
 proc main {
 
-    input_0 = 2;
-    input_1 = 5;
+    input0 = 8;
+    input1 = 5;
     rem = 0;
     mod = 0;
 
-    if(i <= j) {
+    if (input0 <= input1){
 
-        rem = input_1;
-        mod = input_0;
+        rem = input1;
+        mod = input0;
     }else{
 
-        rem = input_0;
-        mod = input_1;
+        rem = input0;
+        mod = input1;
     }
 
-    while (mod <= rem)
+    while (mod <= rem){
         rem = rem - mod;
+    }
 
 }
