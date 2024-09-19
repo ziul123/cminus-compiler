@@ -66,7 +66,7 @@ int get_reg_num(tac_address addr, type_t var_type) {
 			reg = sav_reg + 1;
 			switch (var_type) {
 				case INT_T:
-					printf("la s%1$d, %2$s\nlw, s%1$d, 0(s%1$d)\n", reg, addr.name);
+					printf("la s%1$d, %2$s\nlw s%1$d, 0(s%1$d)\n", reg, addr.name);
 					break;
 				case INT_ARR_T:
 					printf("la s%d, %s", reg, addr.name);
@@ -139,11 +139,97 @@ void generate_instruction(tac_cell tac_line, st_cell **symbol_table) {
 				strcpy(instr, "add");
 				goto tipo_r;
 			}
+		
+		case SUB:
+			strcpy(instr, "sub");
+			goto tipo_r;
+		
+		case MUL:
+			strcpy(instr, "mul");
+			goto tipo_r;
+
+		case DIV:
+			strcpy(instr, "div");
+			goto tipo_r;
+
+		case SLTE:
+			break;
+
+		case SLT:
+			if(imm) {
+				strcpy(instr, "slti");
+				goto tipo_i;
+			}
+			else {
+				strcpy(instr, "slt");
+				goto tipo_r;
+			}
+		
+		case SGT:
+			strcpy(instr, "sgt");
+			goto tipo_r;
+
+		case SGTE:
+			break;
+
+		case SEQ:
+			break;
+
+		case SNEQ:
+			break;
+
+		case CPY:
+			break;
+
+		case JMP:
+			break;
+
+		case JT:
+			break;
+
+		case JF:
+			break;
+		
+		case BEQ:
+			break;
+		
+		case BNE:
+			break;
+		
+		case BGT:
+			break;
+		
+		case BGE:
+			break;
+		
+		case BLT:
+			break;
+		
+		case BLE:
+			break;
+
+		case CALL:
+			break;
+			
+		case RET:
+			break;
+		
+		case PTR_GET:
+			break;
+		
+		case PTR_SET:
+			break;
 
 		case NOP:
 			if (line_addr)
 				printf("%s ", line_addr);
 			printf("nop\n");
+			break;
+
+		case READ_INST:
+			break;
+
+		case WRITE_INST:
 			break;
 
 		tipo_r:
