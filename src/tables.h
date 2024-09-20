@@ -28,6 +28,7 @@
 	inst(BLE) \
 	/* Operacoes de chamada de funcao */ \
 	inst(CALL) \
+	inst(ENTER) \
 	inst(RET) \
 	/* Operacoes de ponteiro */ \
 	inst(PTR_GET) \

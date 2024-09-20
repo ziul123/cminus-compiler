@@ -1,0 +1,8 @@
+#!/usr/bin/zsh
+
+
+asm_f=${1%.cm}.asm
+echo cmc $1
+./cmc $1
+echo fpgrars -p 1 $asm_f
+fpgrars-x86_64-unknown-linux-gnu--8-bit-display -p 1 $asm_f

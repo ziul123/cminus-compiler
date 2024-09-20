@@ -4,5 +4,6 @@
 #define NUM_TMP 7
 #define NUM_SAV 11
 
+void allocate_temporaries(tac_cell tac_table[], int tac_c);
 void allocate_variables(st_cell **symbol_table);
-void generate_instruction(tac_cell tac_line, st_cell **symbol_table); 
+void generate_insts(tac_cell tac_table[], int tac_c, st_cell **symbol_table); 

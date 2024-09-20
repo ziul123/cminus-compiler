@@ -112,7 +112,7 @@ declaracao_fun:
 			char *func_label = malloc(label_len); 
 			strcpy(func_label, $2);
 			func_label[label_len-2] = ':';
-      tac_cell func_enter = { .line_addr = func_label, .inst=NOP};
+      tac_cell func_enter = { .line_addr = func_label, .inst=ENTER};
       tac_table[tac_counter++] = func_enter;
 		}
 		bloco_cmd {;}

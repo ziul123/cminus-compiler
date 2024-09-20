@@ -4,3 +4,4 @@
 cmc
 build
 .vscode/
+*.asm

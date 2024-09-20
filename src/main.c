@@ -12,6 +12,7 @@ extern int fun_counter;
 extern int tac_counter;
 extern int label_counter;
 extern char data[0xFFFF];
+extern char text[0xFFFF];
 
 void print_st_cell(st_cell symbol) {
 	printf("%s: %s", symbol.name, str_type[symbol.sym_type]);
@@ -56,12 +57,20 @@ void print_tac_cell(tac_cell cell, int lineno) {
 
 
 int main(int argc, char **argv) {
+	char *filename;
 	if (argc == 2) {
+		filename = argv[1];
 		if (!(yyin = fopen(argv[1], "r"))) {
 			perror("Error reading file.\n");
 			return 1;
 		}
 	}
+
+	size_t fname_len = strlen(filename);
+	char *outfilename = malloc(fname_len + 1);
+	strcpy(outfilename, filename);
+	memcpy(outfilename + fname_len - 2, "asm", 3);
+
 	symbol_table = malloc(sizeof(st_cell*));
 
 //	yydebug = 1;
@@ -89,10 +98,15 @@ int main(int argc, char **argv) {
 		print_tac_cell(tac_table[i], i);
 	}
 
+	allocate_temporaries(tac_table, tac_counter);
 	allocate_variables(symbol_table);
-	printf(data);
+	//printf(data);
 	
-	for (int i = 0; i < tac_counter; i++) {
-		generate_instruction(tac_table[i], symbol_table);
-	}
+	generate_insts(tac_table, tac_counter, symbol_table);
+	//printf(text);
+	
+	FILE *outfile = fopen(outfilename, "w");
+	fwrite(data, 1, strlen(data), outfile);
+	fwrite(text, 1, strlen(text), outfile);
+	fclose(outfile);
 }

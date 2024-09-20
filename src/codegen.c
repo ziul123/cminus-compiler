@@ -12,262 +12,115 @@ const char *read_proc = \
 const char *write_proc = \
 	"write: li a7, 1\n"
 	"ecall\n"
+	"li a7, 11\n"
+	"li a0, 10\n"
+	"ecall\n"
 	"ret\n";
 
 char data[0xFFFF] = ".data\n";
 char text[0xFFFF] = ".text\ncall main\nli a7, 10\necall\n";
-size_t text_counter = 26; //contador de caracteres em text
 
-const char *sav_regs[NUM_SAV];
-int tmp_reg = 0;
-int sav_reg = 0;
-
-int last_tmp() {
-	int aux = tmp_reg - 1;
-	aux = (aux<0?-aux:aux);
-	return (aux % NUM_TMP) + 1;
-}
-
-char *last_tmp_str() {
-	char *reg = malloc(10);
-	sprintf(reg, "t%d", last_tmp());
-	return reg;
-}
-
-int get_tmp() {
-	int reg = tmp_reg;
-	tmp_reg = (tmp_reg + 1) % NUM_TMP;
-	return reg + 1;
-}
-
-char *get_tmp_str() {
-	char *reg = malloc(10);
-	sprintf(reg, "t%d", get_tmp());
-	return reg;
-}
-
-int get_reg_num(tac_address addr, type_t var_type) {
-	//returns t register if temporary, s register if var
-	// and number if constant
-	int reg;
+char *load_addr(tac_address addr, char *cur_text, int reg, type_t var_type) {
+	int offset;
+	const char *name = addr.name;
+	int tmp = addr.temporary;
+	int c = addr.constant;
 	switch (addr.addr_type) {
 		case TEMP:
-			reg = get_tmp();
+			offset = sprintf(cur_text, "la t%1$d, T%2$d\nlw t%1$d, 0(t%1$d)\n", reg, tmp);
 			break;
+
 		case NAME:
-			for (int i=0; i<=NUM_SAV; i++) {
-				if (!sav_regs[i])
-					break;
-				if (strcmp(sav_regs[i], addr.name) == 0) {
-					return i + 1;
-				}
-			}
-			sav_regs[sav_reg] = addr.name;
-			reg = sav_reg + 1;
-			switch (var_type) {
-				case INT_T:
-					printf("la s%1$d, %2$s\nlw s%1$d, 0(s%1$d)\n", reg, addr.name);
-					break;
-				case INT_ARR_T:
-					printf("la s%d, %s", reg, addr.name);
-					break;
-			}
-			sav_reg = (sav_reg + 1) % NUM_SAV;
-			break;
-		case CONST:
-			return addr.constant;
-	}
-	return reg;
-}
-
-char *get_reg_str(tac_address addr, type_t addr_type) {
-	char *reg = malloc(10);
-	switch (addr.addr_type) {
-		case TEMP:
-			sprintf(reg, "t%d", last_tmp(addr, VOID_T));
-			break;
-		case NAME:
-			sprintf(reg, "s%d", get_reg_num(addr, addr_type));
-			break;
-		case CONST:
-			sprintf(reg, "%d", addr.constant);
-			break;
-	}
-	return reg;
-}
-
-void generate_instruction(tac_cell tac_line, st_cell **symbol_table) {
-	tac_address s1 = tac_line.source1;
-	tac_address s2 = tac_line.source2;
-	enum INST inst = tac_line.inst;
-	char *line_addr = tac_line.line_addr;
-	char *jmp_addr = tac_line.jmp_addr;
-	char instr[10];
-	char *rd, *rs1, *rs2;
-	type_t s1t = VOID_T;
-	type_t s2t = VOID_T;
-	int imm = 0;
-	int both_imm = 0;
-
-	if (s1.addr_type == NAME) {
-		st_cell *symbol = find_sym(symbol_table, s1.name);
-		s1t = symbol->sym_type;
-	}
-
-	if (s2.addr_type == NAME) {
-		st_cell *symbol = find_sym(symbol_table, s2.name);
-		s2t = symbol->sym_type;
-	}
-
-	//caso as duas fontes forem constante, uma precisa ser
-	//carregada em registrador previamente
-	if ((s1.addr_type == CONST) && (s2.addr_type == CONST)) { 
-		printf("li t%d, %d\n", get_tmp(), s1.constant);
-		rs1 = last_tmp_str();
-		imm = 1;
-		both_imm = 1;
-	} else if ((s1.addr_type == CONST) || (s2.addr_type == CONST)) {
-		imm = 1;
-	}
-
-	switch (inst) {
-		case ADD:
-			if (imm) {
-				strcpy(instr, "addi");
-				goto tipo_i;
+			if (var_type == INT_T) {
+				offset = sprintf(cur_text, "la t%1$d, %2$s\nlw t%1$d, 0(t%1$d)\n", reg, name);
 			} else {
+				offset = sprintf(cur_text, "la t%d, %s\n", reg, name);
+			}
+			break;
+
+		case CONST:
+			offset = sprintf(cur_text, "li t%d, %d\n", reg, c);
+			break;
+	}
+	return cur_text + offset;
+}
+
+char *store_tmp(int num, char *cur_text) {
+	cur_text += sprintf(cur_text, "la t1, T%d\n", num);
+	return memccpy(cur_text, "sw t0, 0(t1)\n", 0, 50) - 1;
+}
+
+void generate_insts(tac_cell tac_table[], int tac_c, st_cell **symbol_table) {
+	char *cur_text = text + strlen(text);
+	cur_text = memccpy(cur_text, write_proc, 0, 100) - 1;
+	cur_text = memccpy(cur_text, read_proc, 0, 100) - 1;
+	for (int i=0; i<tac_c; i++) {
+		tac_address s1 = tac_table[i].source1;
+		tac_address s2 = tac_table[i].source2;
+		enum INST inst = tac_table[i].inst;
+		char *line_addr = tac_table[i].line_addr;
+		char *jmp_addr = tac_table[i].jmp_addr;
+		char instr[10];
+		char *rd, *rs1, *rs2;
+		type_t s1t = VOID_T;
+		type_t s2t = VOID_T;
+
+		if (s1.addr_type == NAME) {
+			st_cell *symbol = find_sym(symbol_table, s1.name);
+			s1t = symbol->sym_type;
+		}
+
+		if (s2.addr_type == NAME) {
+			st_cell *symbol = find_sym(symbol_table, s2.name);
+			s2t = symbol->sym_type;
+		}
+		
+		if (line_addr) {
+			cur_text = memccpy(cur_text, line_addr, 0, 50) - 1;
+			*(cur_text++) = '\n';
+		}
+		
+		switch (inst) {
+			case ADD:
 				strcpy(instr, "add");
 				goto tipo_r;
-			}
-		
-		case SUB:
-			strcpy(instr, "sub");
-			goto tipo_r;
-		
-		case MUL:
-			strcpy(instr, "mul");
-			goto tipo_r;
 
-		case DIV:
-			strcpy(instr, "div");
-			goto tipo_r;
+			case CPY:
+				cur_text = load_addr(s2, cur_text, 0, s2t);
+				cur_text += sprintf(cur_text, "la t1, %s\n", s1.name);
+				cur_text = memccpy(cur_text, "sw t0, 0(t1)\n", 0, 50) - 1;
+				break;
 
-		case SLTE:
-			break;
+			case WRITE_INST:
+				cur_text = load_addr(s1, cur_text, 0, s1t);
+				cur_text = memccpy(cur_text, "mv a0, t0\ncall write\n", 0, 50) - 1;
+				break;
 
-		case SLT:
-			if(imm) {
-				strcpy(instr, "slti");
-				goto tipo_i;
-			}
-			else {
-				strcpy(instr, "slt");
-				goto tipo_r;
-			}
-		
-		case SGT:
-			strcpy(instr, "sgt");
-			goto tipo_r;
+			case ENTER:
+				cur_text = memccpy(cur_text, "addi sp, sp, -4\nsw ra, 0(sp)\n", 0, 50) - 1;
+				break;
 
-		case SGTE:
-			break;
+			case RET:
+				cur_text = memccpy(cur_text, "lw ra, 0(sp)\naddi sp, sp, 4\nret\n", 0, 100) - 1;
+				break;
 
-		case SEQ:
-			break;
+			tipo_r:
+				cur_text = load_addr(s1, cur_text, 0, s1t);
+				cur_text = load_addr(s2, cur_text, 1, s2t);
+				cur_text += sprintf(cur_text, "%s t0, t0, t1\n", instr);
+				cur_text = store_tmp(i, cur_text);
+				break;
+		}
+	}
+}
 
-		case SNEQ:
-			break;
-
-		case CPY:
-			break;
-
-		case JMP:
-			break;
-
-		case JT:
-			break;
-
-		case JF:
-			break;
-		
-		case BEQ:
-			break;
-		
-		case BNE:
-			break;
-		
-		case BGT:
-			break;
-		
-		case BGE:
-			break;
-		
-		case BLT:
-			break;
-		
-		case BLE:
-			break;
-
-		case CALL:
-			break;
-			
-		case RET:
-			break;
-		
-		case PTR_GET:
-			break;
-		
-		case PTR_SET:
-			break;
-
-		case SUB:
-			if (imm) {
-				strcpy(instr, "subi");
-				goto tipo_i;
-			} else {
-				strcpy(instr, "sub");
-				goto tipo_r;
-			}
-
-		case NOP:
-			if (line_addr)
-				printf("%s ", line_addr);
-			printf("nop\n");
-			break;
-
-		case READ_INST:
-			break;
-
-		case WRITE_INST:
-			break;
-
-		tipo_r:
-			rs1 = get_reg_str(s1, s1t);
-			rs2 = get_reg_str(s2, s2t);
-			rd = get_tmp_str();
-			if (line_addr)
-				printf("%s ", line_addr);
-			printf("%s %s, %s, %s\n", instr, rd, rs1, rs2); 
-			break;
-
-		tipo_i:
-			if (both_imm) {
-				rs1 = last_tmp_str();
-				rs2 = get_reg_str(s2, s2t);
-			} else  {
-				rs1 = get_reg_str(s1, s1t);
-				rs2 = get_reg_str(s2, s2t);
-			}
-			if (s1.addr_type == CONST && !both_imm) {
-				char *aux = rs1;
-				rs1 = rs2;
-				rs2 = aux;
-			}
-			rd = get_tmp_str();
-			if (line_addr)
-				printf("%s ", line_addr);
-			printf("%s %s, %s, %s\n", instr, rd, rs1, rs2); 
-			break;
+void allocate_temporaries(tac_cell tac_table[], int tac_c) {
+	/* Popula .data com variaveis temporarias */
+	char *dest = data + strlen(data);
+	for (int i=0; i<tac_c; i++) {
+		char tmp[40]; 
+		sprintf(tmp, "T%d: .space 4\n", i);
+		dest = memccpy(dest, tmp, 0, 50) - 1;
 	}
 }
 
