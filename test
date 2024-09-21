@@ -1,4 +1,4 @@
-#!/usr/bin/zsh
+#!/bin/bash
 
 
 asm_f=${1%.cm}.asm
