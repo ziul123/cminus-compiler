@@ -150,9 +150,16 @@ void generate_insts(tac_cell tac_table[], int tac_c, st_cell **symbol_table) {
 				break;
 
 			case PTR_GET:
+				cur_text += sprintf(cur_text, "la t0, %s\n", s1.name);
+				cur_text = load_addr(s2, cur_text, 1, s2t);
+				cur_text = memccpy(cur_text, "add t0, t0, t1\nlw t0, 0(t0)\n", 0, 50) - 1;
+				cur_text = store_tmp(i, cur_text);
 				break;
 
 			case PTR_SET:
+				cur_text = load_addr(s1, cur_text, 0, s1t);
+				cur_text = load_addr(s2, cur_text, 1, s2t);
+				cur_text = memccpy(cur_text, "sw t1, 0(t0)\n", 0, 50) - 1;
 				break;
 
 			case NOP:

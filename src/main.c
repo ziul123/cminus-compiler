@@ -67,7 +67,7 @@ int main(int argc, char **argv) {
 	}
 
 	size_t fname_len = strlen(filename);
-	char *outfilename = malloc(fname_len + 1);
+	char *outfilename = malloc(fname_len + 2);
 	strcpy(outfilename, filename);
 	memcpy(outfilename + fname_len - 2, "asm", 3);
 
