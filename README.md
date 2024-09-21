@@ -5,7 +5,7 @@
 - `./build` ou `make; make cmc`
 
 ### Uso:
-- `cmc file [-o filename] [-t] [-s] [-f] [-W]
+- `cmc file [-o filename] [-t] [-s] [-f] [-W]`
 - `-o <filename>`:	escreve output para arquivo `<filename>` (default é file.asm).
 - `-t`:							imprime a tabela de código de três endereços na tela.
 - `-s`:							imprime a tabela de símbolos na tela.
