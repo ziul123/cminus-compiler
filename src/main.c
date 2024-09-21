@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include "tables.h"
 #include "codegen.h"
 
@@ -54,48 +55,109 @@ void print_tac_cell(tac_cell cell, int lineno) {
 	printf("\n");
 }
 
-
-
+/*
+ * -o <file>: output to <file>
+ * -t: 				print tac
+ * -s: 				print symbol table
+ * -f: 				print function table
+ * -W:				ignore warnings
+*/
 int main(int argc, char **argv) {
+	int oflag = 0;
+	char *outname = NULL;
+	int tflag = 0;
+	int sflag = 0;
+	int fflag = 0;
+	int Wflag = 0;
 	char *filename;
-	if (argc == 2) {
-		filename = argv[1];
-		if (!(yyin = fopen(argv[1], "r"))) {
-			perror("Error reading file.\n");
-			return 1;
-		}
+	int c;
+
+	while ((c = getopt(argc, argv, "o:tsfW")) != -1)
+		switch (c) {
+		case 'o':
+			oflag = 1;
+			outname = optarg;
+			break;
+		case 't':
+			tflag = 1;
+			break;
+		case 's':
+			sflag = 1;
+			break;
+		case 'f':
+			fflag = 1;
+			break;
+		case 'W':
+			Wflag = 1;
+			break;
+		case '?':
+			if (optopt == 'o')
+				fprintf(stderr, "Opção -%c requere argumento.\n", optopt);
+			else
+				fprintf(stderr, "Opção '-%c' não reconhecida.\n", optopt);
 	}
 
-	size_t fname_len = strlen(filename);
-	char *outfilename = malloc(fname_len + 2);
-	strcpy(outfilename, filename);
-	memcpy(outfilename + fname_len - 2, "asm", 3);
+	if (!argv[optind])
+		fprintf(stderr, "Não especificou o arquivo a ser compilado.\n");
+	else
+		filename = argv[optind];
 
+	if (!(yyin = fopen(filename, "r"))) {
+		perror("Error reading file.\n");
+		return 1;
+	}
+
+	if (!oflag) {
+		size_t fname_len = strlen(filename);
+		outname = malloc(fname_len + 2);
+		strcpy(outname, filename);
+		memcpy(outname + fname_len - 2, "asm", 3);
+	}
 	symbol_table = malloc(sizeof(st_cell*));
 
 //	yydebug = 1;
 	yyparse();
 
-//	st_cell *current = *symbol_table;
-//	if (current) {
-//		while (current) {
-//			//print_st_cell(*current);
-//			if (!current->usado)
-//				printf("WARNING: Variavel %s declarada mas nao utilizada!\n", current->name);
-//			current = current->next;
-//		}
-//	}
-//
-//	for (int i=0; i<fun_counter; i++) {
-//		if (strcmp(fun_table[i].name, "main") == 0)
-//			fun_table[i].usado = 1;
-//		//print_ft_cell(fun_table[i]);
-//		if (!fun_table[i].usado)
-//			printf("WARNING: Funcao %s declarada mas nao utilizada!\n", fun_table[i].name);
-//	}
-//
-	for (int i = 0; i < tac_counter; i++) {
-		print_tac_cell(tac_table[i], i);
+	if (!Wflag) {
+		st_cell *current = *symbol_table;
+		if (current) {
+			while (current) {
+				if (!current->usado)
+					printf("WARNING: Variavel %s declarada mas nao utilizada!\n", current->name);
+				current = current->next;
+			}
+		}
+
+		for (int i=0; i<fun_counter; i++) {
+			if (strcmp(fun_table[i].name, "main") == 0)
+				fun_table[i].usado = 1;
+			if (!fun_table[i].usado)
+				printf("WARNING: Funcao %s declarada mas nao utilizada!\n", fun_table[i].name);
+		}
+	}
+
+	if (sflag) {
+		st_cell *current = *symbol_table;
+		if (current) {
+			while (current) {
+				print_st_cell(*current);
+				current = current->next;
+			}
+		}
+	}
+
+	if (fflag) {
+		for (int i=0; i<fun_counter; i++) {
+			if (strcmp(fun_table[i].name, "main") == 0)
+				fun_table[i].usado = 1;
+			print_ft_cell(fun_table[i]);
+		}
+	}
+
+	if (tflag) {
+		for (int i = 0; i < tac_counter; i++) {
+			print_tac_cell(tac_table[i], i);
+		}
 	}
 
 	allocate_variables(symbol_table);
@@ -103,7 +165,7 @@ int main(int argc, char **argv) {
 	
 	generate_insts(tac_table, tac_counter, symbol_table);
 	
-	FILE *outfile = fopen(outfilename, "w");
+	FILE *outfile = fopen(outname, "w");
 	fwrite(data, 1, strlen(data), outfile);
 	fwrite(text, 1, strlen(text), outfile);
 	fclose(outfile);

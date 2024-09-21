@@ -71,13 +71,6 @@ write 		{return WRITE;}
 {rcurly}		{return RCURLY;}
 {lbrack}		{return LBRACK;}
 {rbrack}		{return RBRACK;}
-{gt}		    {return GT;}
-{lt}		    {return LT;}
-{gt_eq}		    {return GT_EQ;}
-{lt_eq}		    {return LT_EQ;}
-{eq_eq}		    {return EQ_EQ;}
-{neq}		    {return NEQ;}
-
 {semicolon}	{return SEMICOLON;}
 {gt}				{return GT;}
 {lt}				{return LT;}
