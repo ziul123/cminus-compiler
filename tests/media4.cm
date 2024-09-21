@@ -13,6 +13,7 @@ proc main {
 
     media = input0 + input1 + input2 + input3;
 
-    media = media / 4
+    media = media / 4;
 
+    write media;
 }
