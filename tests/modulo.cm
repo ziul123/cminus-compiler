@@ -5,8 +5,8 @@ int mod;
 
 proc main {
 
-    input0 = 8;
-    input1 = 5;
+    read input0;
+    read input1;
     rem = 0;
     mod = 0;
 
