@@ -1,0 +1,18 @@
+int input0;
+int input1;
+int input2;
+int input3;
+int media;
+
+proc main {
+
+    read input0;
+    read input1;
+    read input2;
+    read input3;
+
+    media = input0 + input1 + input2 + input3;
+
+    media = media / 4
+
+}
