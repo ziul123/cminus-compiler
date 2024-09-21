@@ -77,11 +77,48 @@ void generate_insts(tac_cell tac_table[], int tac_c, st_cell **symbol_table) {
 		
 		if (line_addr) {
 			cur_text = memccpy(cur_text, line_addr, 0, 50) - 1;
+			*(cur_text++) = ':';
 			*(cur_text++) = '\n';
 		}
 		
 		switch (inst) {
 			case ADD:
+				strcpy(instr, "add");
+				goto tipo_r;
+
+			case SUB:
+				strcpy(instr, "sub");
+				goto tipo_r;
+
+			case MUL:
+				strcpy(instr, "mul");
+				goto tipo_r;
+
+			case DIV:
+				strcpy(instr, "div");
+				goto tipo_r;
+
+			case SLT:
+				strcpy(instr, "slt");
+				goto tipo_r;
+
+			case SLTE: //TODO
+				strcpy(instr, "add");
+				goto tipo_r;
+
+			case SGT: //TODO
+				strcpy(instr, "add");
+				goto tipo_r;
+
+			case SGTE: //TODO
+				strcpy(instr, "add");
+				goto tipo_r;
+
+			case SEQ: //TODO
+				strcpy(instr, "add");
+				goto tipo_r;
+
+			case SNEQ: //TODO
 				strcpy(instr, "add");
 				goto tipo_r;
 
@@ -91,9 +128,17 @@ void generate_insts(tac_cell tac_table[], int tac_c, st_cell **symbol_table) {
 				cur_text = memccpy(cur_text, "sw t0, 0(t1)\n", 0, 50) - 1;
 				break;
 
-			case WRITE_INST:
+			case JMP:
+				cur_text += sprintf(cur_text, "j %s\n", jmp_addr);
+				break;
+
+			case JF:
 				cur_text = load_addr(s1, cur_text, 0, s1t);
-				cur_text = memccpy(cur_text, "mv a0, t0\ncall write\n", 0, 50) - 1;
+				cur_text += sprintf(cur_text, "beqz t0, %s\n", jmp_addr);
+				break;
+
+			case CALL:
+				cur_text += sprintf(cur_text, "call %s\n", jmp_addr);
 				break;
 
 			case ENTER:
@@ -103,6 +148,28 @@ void generate_insts(tac_cell tac_table[], int tac_c, st_cell **symbol_table) {
 			case RET:
 				cur_text = memccpy(cur_text, "lw ra, 0(sp)\naddi sp, sp, 4\nret\n", 0, 100) - 1;
 				break;
+
+			case PTR_GET:
+				break;
+
+			case PTR_SET:
+				break;
+
+			case NOP:
+				cur_text = memccpy(cur_text, "nop\n", 0, 10) - 1;
+				break;
+
+			case READ_INST:
+				cur_text = memccpy(cur_text, "call read\n", 0, 50) - 1;
+				cur_text += sprintf(cur_text, "la t1, %s\n", s1.name);
+				cur_text = memccpy(cur_text, "sw a0, 0(t1)\n", 0, 50) - 1;
+				break;
+
+			case WRITE_INST:
+				cur_text = load_addr(s1, cur_text, 0, s1t);
+				cur_text = memccpy(cur_text, "mv a0, t0\ncall write\n", 0, 50) - 1;
+				break;
+
 
 			tipo_r:
 				cur_text = load_addr(s1, cur_text, 0, s1t);

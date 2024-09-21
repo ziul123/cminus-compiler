@@ -72,6 +72,12 @@ write 		{return WRITE;}
 {lbrack}		{return LBRACK;}
 {rbrack}		{return RBRACK;}
 {semicolon}	{return SEMICOLON;}
+{gt}				{return GT;}
+{lt}				{return LT;}
+{gt_eq}			{return GT_EQ;}
+{lt_eq}			{return LT_EQ;}
+{eq_eq}			{return EQ_EQ;}
+{neq}				{return NEQ;}
 %%
 
 int yywrap() {

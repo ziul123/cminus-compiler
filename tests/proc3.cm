@@ -1,0 +1,21 @@
+int x;
+//TODO com array
+int result;
+
+proc fat {
+	if (x) {
+		x = x - 1;
+		fat();
+		result = result * i;
+	} else {
+		result = 1;
+	}
+	return;
+}
+
+proc main {
+	read x;
+	fat();
+	write result;
+	return;
+}

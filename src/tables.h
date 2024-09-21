@@ -18,14 +18,7 @@
 	inst(CPY) \
 	/* Operacoes de desvio */ \
 	inst(JMP) \
-	inst(JT) \
 	inst(JF) \
-	inst(BEQ) \
-	inst(BNE) \
-	inst(BGT) \
-	inst(BGE) \
-	inst(BLT) \
-	inst(BLE) \
 	/* Operacoes de chamada de funcao */ \
 	inst(CALL) \
 	inst(ENTER) \

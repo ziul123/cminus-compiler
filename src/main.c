@@ -98,12 +98,10 @@ int main(int argc, char **argv) {
 		print_tac_cell(tac_table[i], i);
 	}
 
-	allocate_temporaries(tac_table, tac_counter);
 	allocate_variables(symbol_table);
-	//printf(data);
+	allocate_temporaries(tac_table, tac_counter);
 	
 	generate_insts(tac_table, tac_counter, symbol_table);
-	//printf(text);
 	
 	FILE *outfile = fopen(outfilename, "w");
 	fwrite(data, 1, strlen(data), outfile);

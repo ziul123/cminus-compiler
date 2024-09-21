@@ -108,11 +108,11 @@ declaracao_fun:
 		PROC ID {
 			ft_cell new_fun = (ft_cell){.name=$2};
 			fun_table[fun_counter++] = new_fun;
-			size_t label_len = strlen($2) + 2; //espaco para : e \0
-			char *func_label = malloc(label_len); 
-			strcpy(func_label, $2);
-			func_label[label_len-2] = ':';
-      tac_cell func_enter = { .line_addr = func_label, .inst=ENTER};
+			//size_t label_len = strlen($2) + 2; //espaco para : e \0
+			//char *func_label = malloc(label_len); 
+			//strcpy(func_label, $2);
+			//func_label[label_len-2] = ':';
+      tac_cell func_enter = { .line_addr = $2, .inst=ENTER};
       tac_table[tac_counter++] = func_enter;
 		}
 		bloco_cmd {;}
@@ -337,7 +337,17 @@ while_cmd:
         char* top_label = new_label();
         char* botton_label = new_label();
 
-        tac_cell tmp1 = {.jmp_addr=botton_label, .line_addr = top_label, .source1=$3, .inst=JF};
+				tac_cell tmp1;
+				tac_cell prev = tac_table[tac_counter-1];
+				if (prev.inst == SLT || prev.inst == SGT \
+					|| prev.inst == SLTE || prev.inst == SGTE \
+					|| prev.inst == SEQ || prev.inst == SNEQ) {
+
+					tac_table[tac_counter-1].line_addr = top_label;
+					tac_cell tmp1 = {.jmp_addr=botton_label, .source1=$3, .inst=JF};
+				} else {
+					tac_cell tmp1 = {.jmp_addr=botton_label, .line_addr = top_label, .source1=$3, .inst=JF};
+				}
         tac_table[tac_counter++] = tmp1;
 
         $<pair>$ = (strpair){.str1 = top_label, .str2 = botton_label};

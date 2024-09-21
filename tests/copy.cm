@@ -1,0 +1,9 @@
+int x;
+int y;
+
+proc main {
+	read x;
+	x = x + 1;
+	write x;
+	return;
+}

@@ -1,8 +1,9 @@
 int x; int y;
 
 proc main {
-	if (x) {
-		y = y * (1 + 2);
+	read x;
+	if (x < 10) {
+		write 1;
 	}
-	x = y;
+	write 0;
 }

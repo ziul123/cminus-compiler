@@ -1,0 +1,21 @@
+int x;
+int y;
+int z;
+
+proc nums {
+	read x;
+	read y;
+	return;
+}
+
+proc soma {
+	nums();
+	z = x + y;
+	return;
+}
+
+proc main {
+	soma();
+	write z;
+	return;
+}
