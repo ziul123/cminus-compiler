@@ -24,4 +24,5 @@ proc main {
         rem = rem - mod;
     }
 
+    write rem
 }
