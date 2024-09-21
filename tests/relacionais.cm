@@ -1,0 +1,32 @@
+int x;
+int y;
+
+proc main {
+	read x;
+	read y;
+	if (x < y) {
+		write 0;
+	}
+
+	if (x <= y) {
+		write 1;
+	}
+
+	if (x >= y) {
+		write 2;
+	}
+
+	if (x > y) {
+		write 3;
+	}
+
+	if (x == y) {
+		write 4;
+	}
+
+	if (x != y) {
+		write 5;
+	}
+
+	return;
+}

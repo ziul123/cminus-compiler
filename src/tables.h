@@ -8,8 +8,8 @@
 	inst(SUB) \
 	inst(MUL) \
 	inst(DIV) \
-	inst(SLTE) \
 	inst(SLT) \
+	inst(SLTE) \
 	inst(SGT) \
 	inst(SGTE) \
 	inst(SEQ) \

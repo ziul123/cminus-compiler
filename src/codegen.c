@@ -102,25 +102,40 @@ void generate_insts(tac_cell tac_table[], int tac_c, st_cell **symbol_table) {
 				strcpy(instr, "slt");
 				goto tipo_r;
 
-			case SLTE: //TODO
-				strcpy(instr, "add");
-				goto tipo_r;
+			case SLTE:
+				cur_text = load_addr(s1, cur_text, 0, s1t);
+				cur_text = load_addr(s2, cur_text, 1, s2t);
+				cur_text = memccpy(cur_text, "slt t0, t1, t0\nxori t0, t0, 1\n", 0, 50) - 1;
+				cur_text = store_tmp(i, cur_text);
+				break;
 
-			case SGT: //TODO
-				strcpy(instr, "add");
-				goto tipo_r;
+			case SGT:
+				cur_text = load_addr(s1, cur_text, 0, s1t);
+				cur_text = load_addr(s2, cur_text, 1, s2t);
+				cur_text = memccpy(cur_text, "slt t0, t1, t0\n", 0, 50) - 1;
+				cur_text = store_tmp(i, cur_text);
+				break;
 
-			case SGTE: //TODO
-				strcpy(instr, "add");
-				goto tipo_r;
+			case SGTE:
+				cur_text = load_addr(s1, cur_text, 0, s1t);
+				cur_text = load_addr(s2, cur_text, 1, s2t);
+				cur_text = memccpy(cur_text, "slt t0, t0, t1\nxori t0, t0, 1\n", 0, 50) - 1;
+				cur_text = store_tmp(i, cur_text);
+				break;
 
-			case SEQ: //TODO
-				strcpy(instr, "add");
-				goto tipo_r;
+			case SEQ:
+				cur_text = load_addr(s1, cur_text, 0, s1t);
+				cur_text = load_addr(s2, cur_text, 1, s2t);
+				cur_text = memccpy(cur_text, "sub t0, t0, t1\nseqz t0, t0\n", 0, 50) - 1;
+				cur_text = store_tmp(i, cur_text);
+				break;
 
-			case SNEQ: //TODO
-				strcpy(instr, "add");
-				goto tipo_r;
+			case SNEQ:
+				cur_text = load_addr(s1, cur_text, 0, s1t);
+				cur_text = load_addr(s2, cur_text, 1, s2t);
+				cur_text = memccpy(cur_text, "sub t0, t0, t1\nsnez t0, t0\n", 0, 50) - 1;
+				cur_text = store_tmp(i, cur_text);
+				break;
 
 			case CPY:
 				cur_text = load_addr(s2, cur_text, 0, s2t);
