@@ -1,6 +1,0 @@
-Trabalho da disciplina de compiladores
-Compilador de C- para RISC-V
-
-Uso:
-	* `make`
-	* `make cmc`

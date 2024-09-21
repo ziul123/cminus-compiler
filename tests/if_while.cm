@@ -1,0 +1,27 @@
+int input0;
+int input1;
+int rem;
+int mod;
+
+proc main {
+
+    input0 = 8;
+    input1 = 5;
+    rem = 0;
+    mod = 0;
+
+    if (input0 <= input1){
+
+        rem = input1;
+        mod = input0;
+    }else{
+
+        rem = input0;
+        mod = input1;
+    }
+
+    while (mod <= rem){
+        rem = rem - mod;
+    }
+
+}
