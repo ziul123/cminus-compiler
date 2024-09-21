@@ -1,0 +1,40 @@
+int num;
+int counter;
+int x;
+int i[100];
+int aux;
+int result;
+
+proc fib {
+	if (x <= 1) {
+		i[x] = 1;
+		result = 1;
+	} else {
+		if (i[x]) {
+			result = i[x];
+		} else {
+			x = x - 1;
+			fib();
+			x = x + 1;
+			aux = result;
+			x = x - 2;
+			fib();
+			x = x + 2;
+			result = result + aux;
+			i[x] = result;
+		}
+	}
+	return;
+}
+
+proc main {
+	read num;
+	counter = 0;
+	while (counter <= num) {
+		x = counter;
+		fib();
+		write result;
+		counter = counter + 1;
+	}
+	return;
+}
